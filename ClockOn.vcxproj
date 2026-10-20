@@ -154,6 +154,8 @@
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="guide.cpp" />
+    <ClCompile Include="guideballoon.cpp" />
+    <ClCompile Include="guidetext.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -178,6 +180,8 @@
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="guide.h" />
+    <ClInclude Include="guideballoon.h" />
+    <ClInclude Include="guidetext.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="main.h" />

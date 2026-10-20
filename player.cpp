@@ -84,7 +84,7 @@ void InitPlayer(void)
 
 	g_nPatternAnimPlayer = 0; //パターンNo,を初期化する
 
-	g_player.pos = D3DXVECTOR3(PLAYER_SIZE, -PLAYER_SIZE, 0.0f); //位置を初期化
+	g_player.pos = D3DXVECTOR3(500, 500, 0.0f); //位置を初期化
 
 	g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動量を初期化
 

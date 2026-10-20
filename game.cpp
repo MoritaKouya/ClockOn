@@ -213,6 +213,7 @@ void LoadStage()
 
 			for (nCountX = 0; nCountX < nMax_X; nCountX++)
 			{ //X座標の最大数分繰り返す
+
 				(void)fscanf(pFile, "%d%*[,]", &nScan);
 
 				switch (nScan /10) //数値 / 10の値がオブジェクトのタイプ、余りの値がオブジェクトの種類
@@ -241,7 +242,7 @@ void LoadStage()
 
 				case OBJECTTYPE_4:
 
-					SetGuide(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f));
+					SetGuide(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), nScan % 10);
 
 					break;
 				}
