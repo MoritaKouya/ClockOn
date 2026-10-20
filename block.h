@@ -11,7 +11,7 @@
 
 //マクロ定義
 
-#define MAX_BLOCK (128) //ブロックの最大数
+#define MAX_BLOCK (4096) //ブロックの最大数
 
 #define BLOCK_SIZE (20) //ブロックの半径
 

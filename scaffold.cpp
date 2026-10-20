@@ -81,25 +81,25 @@ void InitScaffold(void)
 
 		pVtx[0].pos.x = g_aScaffold[nCntScaffold].pos.x - g_aScaffold[nCntScaffold].fWidth;
 
-		pVtx[0].pos.y = g_aScaffold[nCntScaffold].pos.y;
+		pVtx[0].pos.y = g_aScaffold[nCntScaffold].pos.y - g_aScaffold[nCntScaffold].fHeight;
 
 		pVtx[0].pos.z = 0.0f;
 
 		pVtx[1].pos.x = g_aScaffold[nCntScaffold].pos.x + g_aScaffold[nCntScaffold].fWidth;
 
-		pVtx[1].pos.y = g_aScaffold[nCntScaffold].pos.y;
+		pVtx[1].pos.y = g_aScaffold[nCntScaffold].pos.y - g_aScaffold[nCntScaffold].fHeight;
 
 		pVtx[1].pos.z = 0.0f;
 
 		pVtx[2].pos.x = g_aScaffold[nCntScaffold].pos.x - g_aScaffold[nCntScaffold].fWidth;
 
-		pVtx[2].pos.y = g_aScaffold[nCntScaffold].pos.y + g_aScaffold[nCntScaffold].fHeight;
+		pVtx[2].pos.y = g_aScaffold[nCntScaffold].pos.y;
 
 		pVtx[2].pos.z = 0.0f;
 
 		pVtx[3].pos.x = g_aScaffold[nCntScaffold].pos.x + g_aScaffold[nCntScaffold].fWidth;
 
-		pVtx[3].pos.y = g_aScaffold[nCntScaffold].pos.y + g_aScaffold[nCntScaffold].fHeight;
+		pVtx[3].pos.y = g_aScaffold[nCntScaffold].pos.y;
 
 		pVtx[3].pos.z = 0.0f;
 
@@ -241,29 +241,29 @@ void SetScaffold(D3DXVECTOR3 pos)
 
 			g_aScaffold[nCntScaffold].bUse = true; //使用している状態にする
 
-			//頂点座標の更新
+			//頂点座標の設定
 
 			pVtx[0].pos.x = g_aScaffold[nCntScaffold].pos.x - g_aScaffold[nCntScaffold].fWidth;
 
-			pVtx[0].pos.y = g_aScaffold[nCntScaffold].pos.y;
+			pVtx[0].pos.y = g_aScaffold[nCntScaffold].pos.y - g_aScaffold[nCntScaffold].fHeight;
 
 			pVtx[0].pos.z = 0.0f;
 
 			pVtx[1].pos.x = g_aScaffold[nCntScaffold].pos.x + g_aScaffold[nCntScaffold].fWidth;
 
-			pVtx[1].pos.y = g_aScaffold[nCntScaffold].pos.y;
+			pVtx[1].pos.y = g_aScaffold[nCntScaffold].pos.y - g_aScaffold[nCntScaffold].fHeight;
 
 			pVtx[1].pos.z = 0.0f;
 
 			pVtx[2].pos.x = g_aScaffold[nCntScaffold].pos.x - g_aScaffold[nCntScaffold].fWidth;
 
-			pVtx[2].pos.y = g_aScaffold[nCntScaffold].pos.y + g_aScaffold[nCntScaffold].fHeight;
+			pVtx[2].pos.y = g_aScaffold[nCntScaffold].pos.y;
 
 			pVtx[2].pos.z = 0.0f;
 
 			pVtx[3].pos.x = g_aScaffold[nCntScaffold].pos.x + g_aScaffold[nCntScaffold].fWidth;
 
-			pVtx[3].pos.y = g_aScaffold[nCntScaffold].pos.y + g_aScaffold[nCntScaffold].fHeight;
+			pVtx[3].pos.y = g_aScaffold[nCntScaffold].pos.y;
 
 			pVtx[3].pos.z = 0.0f;
 
@@ -292,13 +292,13 @@ bool CollisionScaffold(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMo
 
 				&& pPos->x - fWidth < g_aScaffold[nCount].pos.x + g_aScaffold[nCount].fWidth)
 			{ //横の判定
-				if (pPosOld->y <= g_aScaffold[nCount].pos.y
+				if (pPosOld->y <= g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight
 
-					&& g_aScaffold[nCount].pos.y < pPos->y)
+					&& g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight < pPos->y )
 				{ //上から下
 					bLanding = true; //ジャンプが可能
 
-					pPos->y = g_aScaffold[nCount].pos.y; //プレイヤーの位置を足場の上にする
+					pPos->y = g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight; //プレイヤーの位置を足場の上にする
 
 					pMove->y = 0.0f;
 

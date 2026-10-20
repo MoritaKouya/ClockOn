@@ -286,9 +286,9 @@ bool CollisionBlock(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove,
 		{
 			//ècÇÃìñÇΩÇËîªíË
 
-			if (g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPos->x + fWidth
+			if (g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPosOld->x + fWidth
 
-				&& pPos->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
+				&& pPosOld->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
 			{ //â°ÇÃîªíË
 				if (pPosOld->y <= g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight
 
@@ -313,37 +313,30 @@ bool CollisionBlock(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove,
 
 			//â°ÇÃìñÇΩÇËîªíË
 
-			if (pPos->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight
+			if (pPosOld->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight
 
-				&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPos->y)
+				&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPosOld->y)
 			{ //ècÇÃîªíË
 
-				if (pPosOld->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight
+				if (pPosOld->x + fWidth <= g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth
 
-					&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPosOld->y)
-				{ //ècÇÃîªíË
+					&& g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPos->x + fWidth)
+				{ //ç∂Ç©ÇÁâE
+					pPos->x = g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth - fWidth;
 
-					if (pPosOld->x + fWidth <= g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth
+					pMove->x = 0.0f;
+				}
+				else if (g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth <= pPosOld->x - fWidth
 
-						&& g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPos->x + fWidth)
-					{ //ç∂Ç©ÇÁâE
-						pPos->x = g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth - fWidth;
+					&& pPos->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
+				{ //âEÇ©ÇÁç∂
+					pPos->x = g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth + fWidth;
 
-						pMove->x = 0.0f;
-					}
-					else if (g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth <= pPosOld->x - fWidth
-
-						&& pPos->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
-					{ //âEÇ©ÇÁç∂
-						pPos->x = g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth + fWidth;
-
-						pMove->x = 0.0f;
-					}
+					pMove->x = 0.0f;
 				}
 			}
 		}
 	}
-
 	return bLanding;
 }
 
