@@ -90,7 +90,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -153,6 +153,7 @@
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="guide.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scaffold.cpp" />
     <ClCompile Include="sound.cpp" />
+    <ClCompile Include="stageselect.cpp" />
     <ClCompile Include="stoptime.cpp" />
     <ClCompile Include="stoptime_playereffect.cpp" />
     <ClCompile Include="title.cpp" />
@@ -175,6 +177,7 @@
     <ClInclude Include="enemy.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="guide.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="main.h" />
@@ -182,6 +185,7 @@
     <ClInclude Include="result.h" />
     <ClInclude Include="scaffold.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="stageselect.h" />
     <ClInclude Include="stoptime.h" />
     <ClInclude Include="stoptime_playereffect.h" />
     <ClInclude Include="title.h" />

@@ -15,6 +15,7 @@
 #include "chargeeffect.h"
 #include "enemy.h"
 #include "fade.h"
+#include "guide.h"
 #include "input.h"
 #include "item.h"
 #include "scaffold.h"
@@ -22,11 +23,39 @@
 #include "stoptime_playereffect.h"
 #include "player.h"
 
+//マクロ定義
+
+#define CELL_SIZE (20) //マスの半径
+
+#define NUM_MAP (1) //マップのタイプ
+
+//オブジェクトの列挙型定義
+
+typedef enum
+{
+	OBJECTTYPE_0 = 0, //空白
+
+	OBJECTTYPE_1, //ブロック
+
+	OBJECTTYPE_2, //足場
+
+	OBJECTTYPE_3, //敵
+
+	OBJECTTYPE_4, //ガイド
+
+	OBJECTTYPE_MAX
+}OBJECTTYPE;
+
 //グローバル変数
 
 LPDIRECT3DTEXTURE9 g_pTextureGame= NULL; //テクスチャへのポインタ
 
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffGame= NULL; //頂点バッファのポインタ
+
+const char* g_aStageFile_Path[NUM_MAP] =
+{
+	"Data/SAVEDATA/STAGE/stage000.csv"
+}; //ステージのファイルの相対パス
 
 //==================================
 //タイトル画面の初期化処理 
@@ -147,80 +176,80 @@ void InitGame(void)
 
 	InitEnemy();
 
+	//ガイド
+
+	InitGuide();
+
 	//チャージエフェクト
 
 	InitChargeEffect();
 
-	//アイテム
-
-	InitItem();
-
-	SetItem(D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(30.0f, -20.0f, 0.0f), ITEMTYPE_00);
-
-	SetItem(D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.0f), D3DXVECTOR3(-30.0f, -20.0f, 0.0f), ITEMTYPE_00);
-
-
-	//敵呼び出し
-
-	SetEnemy(D3DXVECTOR3(100.0f, 100.0f, 0.0f), ENEMYTYPE_0);
-
-	//ブロック呼び出し
-
-	for (int nCount = 0; nCount < SCREEN_WIDTH / (BLOCK_SIZE * 2) + 2; nCount++)
-	{
-		SetBlock(D3DXVECTOR3(-BLOCK_SIZE + (BLOCK_SIZE * 2) * (float)nCount, SCREEN_HEIGHT - 40, 0.0f));
-	}
-
-	for (int nCount = 0; nCount < SCREEN_WIDTH / (BLOCK_SIZE * 2) + 2; nCount++)
-	{
-		SetBlock(D3DXVECTOR3(-BLOCK_SIZE + (BLOCK_SIZE * 2) * (float)nCount, SCREEN_HEIGHT, 0.0f));
-	}
-
-	for (int nCount = 0; nCount < SCREEN_WIDTH / (BLOCK_SIZE * 2) + 2; nCount++)
-	{
-		SetScaffold(D3DXVECTOR3(-BLOCK_SIZE + (BLOCK_SIZE * 2) * (float)nCount, SCREEN_HEIGHT / 4 * 2, 0.0f));
-	}
-
-	for (int nCount = 0; nCount < SCREEN_WIDTH / (BLOCK_SIZE * 2) + 2; nCount++)
-	{
-		SetScaffold(D3DXVECTOR3(-BLOCK_SIZE + (BLOCK_SIZE * 2) * (float)nCount, SCREEN_HEIGHT / 4 * 3, 0.0f));
-	}
-
 	//ステージの読み込み
 
-	/*LoadStage();*/
+	LoadStage();
 }
 
+//=============================
+// ステージのロード処理
+//=============================
 void LoadStage()
 {
-	/*FILE* pFile;
+	FILE* pFile;
 
-	int nCount, nCount2, nScan = 0;
+	int nCountX,nCountY,nMax_X, nMax_Y, nScan = 0;
 
-	pFile = fopen("Data/SAVEDATA/STAGE/stage000.csv", "r");
+	pFile = fopen(g_aStageFile_Path[0], "r");
 
 	if (pFile != NULL)
 	{
+		//最大数の代入
 
-		for (nCount = 0; nScan != 6666; nCount++)
-		{
-			for (nCount2 = 0; nScan != 666 && nScan != 6666; nCount2++)
-			{
-				(void)fscanf(pFile, "%d", &nScan);
+		(void)fscanf(pFile, "%d%*[,]", &nMax_X); //X座標
 
-				switch (nScan)
+		(void)fscanf(pFile, "%d%*[,]", &nMax_Y); //Y座標
+
+		for (nCountY = 0; nCountY < nMax_Y; nCountY++)
+		{ //Y座標の最大数分繰り返す
+
+			for (nCountX = 0; nCountX < nMax_X; nCountX++)
+			{ //X座標の最大数分繰り返す
+				(void)fscanf(pFile, "%d%*[,]", &nScan);
+
+				switch (nScan /10) //数値 / 10の値がオブジェクトのタイプ、余りの値がオブジェクトの種類
 				{
-				case 1:
+				case OBJECTTYPE_0: //タイプ０の場合
 
-					SetBlock(D3DXVECTOR3(-BLOCK_SIZE + (BLOCK_SIZE * 2) * (float)nCount, (BLOCK_SIZE * 2) * (float)nCount2, 0.0f));
+					break; //空白
+
+				case OBJECTTYPE_1: //タイプ１の場合
+
+					SetBlock(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY, 0.0f));
+
+					break;
+
+				case OBJECTTYPE_2: //タイプ２の場合
+
+					SetScaffold(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY, 0.0f));
+				
+					break;
+
+				case OBJECTTYPE_3: //タイプ３の場合
+
+					SetEnemy(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), (ENEMYTYPE)(nScan % 10));
+				
+					break;
+
+				case OBJECTTYPE_4:
+
+					SetGuide(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f));
 
 					break;
 				}
 			}
 		}
 
-		fclose(pFile);
-	}*/
+		fclose(pFile); //ファイルを閉じる
+	}
 }
 
 //==================================
@@ -281,6 +310,10 @@ void UninitGame(void)
 	//敵
 
 	UninitEnemy();
+	
+	//ガイド
+
+	UninitGuide();
 
 	//チャージエフェクト
 
@@ -345,6 +378,10 @@ void UpdateGame(void)
 
 		UpdateEnemy();
 
+		//ガイド
+
+		UpdateGuide();
+
 		//チャージエフェクト
 
 		UpdateChargeEffect();
@@ -394,6 +431,10 @@ void DrawGame(void)
 	//足場
 
 	DrawScaffold();
+
+	//ガイド
+
+	DrawGuide();
 
 	//アイテム
 
