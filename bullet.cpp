@@ -26,6 +26,8 @@
 //
 #include "sound.h"
 
+#include "stoptime.h"
+
 //マクロ定義
 
 #define MAX_BULLET (128) //球の最大数
@@ -211,51 +213,76 @@ void UpdateBullet(void)
 
 			g_aBullet[nCntBullet].ScreenPos.y = g_aBullet[nCntBullet].pos.y - GetPosCamera()->y;
 
+			if (GetStopTime()->bStopTime == false)
+			{ //時間停止中じゃない場合
+
 			//移動
 
-			MoveBullet(nCntBullet);
+				MoveBullet(nCntBullet);
 
-			if (g_aBullet[nCntBullet].type == BULLETTYPE_PLAYER)
-			{//プレイヤーの球
+				if (g_aBullet[nCntBullet].type == BULLETTYPE_PLAYER)
+				{//プレイヤーの球
 
-				////エフェクト
+					////エフェクト
 
-				//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.75f), 25.0f, 12);
+					//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.75f), 25.0f, 12);
 
-				//当たり判定
+					//当たり判定
 
-				CollisionEnemy(&g_aBullet[nCntBullet]); //敵
+					CollisionEnemy(&g_aBullet[nCntBullet]); //敵
 
-				CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
+					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
 
-				//CollisionBoss(&g_aBullet[nCntBullet]); //ボス
+					//CollisionBoss(&g_aBullet[nCntBullet]); //ボス
+				}
+				else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY)
+				{//敵の球
+
+					////エフェクト
+
+					//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(0.0f, 0.0f, 0.75f, 1.0f), 25.0f, 12);
+
+					//当たり判定
+
+					//CollisionPlayer(&g_aBullet[nCntBullet]); //プレイヤー
+				}
 			}
-			else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY)
-			{//敵の球
 
-				////エフェクト
 
-				//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(0.0f, 0.0f, 0.75f, 1.0f), 25.0f, 12);
+			VERTEX_2D* pVtx;
 
-				//当たり判定
+			//頂点バッファをロックし、頂点データへのポインタを取得
 
-				//CollisionPlayer(&g_aBullet[nCntBullet]); //プレイヤー
-			}			
+			g_pVtxBuffBullet->Lock(0, 0, (void**)&pVtx, 0);
 
-			//寿命のカウントダウン
+			pVtx += nCntBullet * 4;
 
-			g_aBullet[nCntBullet].nLife--;
+			//頂点座標の更新
 
-			if (g_aBullet[nCntBullet].nLife <= 0) //寿命が尽きた
-			{
-				//爆発の設定
+			pVtx[0].pos.x = g_aBullet[nCntBullet].ScreenPos.x + sinf(-g_aBullet[nCntBullet].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
 
-				//SetExplosion(g_aBullet[nCntBullet].pos, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)); //位置　色
+			pVtx[0].pos.y = g_aBullet[nCntBullet].ScreenPos.y + cosf(-g_aBullet[nCntBullet].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
 
-				g_aBullet[nCntBullet].bUse = false; //使用していない状態にする
-			}
+			pVtx[0].pos.z = 0.0f;
+
+			pVtx[1].pos.x = g_aBullet[nCntBullet].ScreenPos.x + sinf(-g_aBullet[nCntBullet].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
+
+			pVtx[1].pos.y = g_aBullet[nCntBullet].ScreenPos.y + cosf(-g_aBullet[nCntBullet].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
+
+			pVtx[1].pos.z = 0.0f;
+
+			pVtx[2].pos.x = g_aBullet[nCntBullet].ScreenPos.x + sinf(-g_aBullet[nCntBullet].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
+
+			pVtx[2].pos.y = g_aBullet[nCntBullet].ScreenPos.y + cosf(-g_aBullet[nCntBullet].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
+
+			pVtx[2].pos.z = 0.0f;
+
+			pVtx[3].pos.x = g_aBullet[nCntBullet].ScreenPos.x + sinf(-g_aBullet[nCntBullet].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
+
+			pVtx[3].pos.y = g_aBullet[nCntBullet].ScreenPos.y + cosf(-g_aBullet[nCntBullet].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
+
+			pVtx[3].pos.z = 0.0f;
 		}
-
 		
 	}
 
@@ -266,16 +293,10 @@ void UpdateBullet(void)
 //==============
 void MoveBullet(int nCnt)
 {
+
+
 	if (g_aBullet[nCnt].bUse == true)
 	{//球が使用されている場合
-
-		VERTEX_2D* pVtx;
-
-		//頂点バッファをロックし、頂点データへのポインタを取得
-
-		g_pVtxBuffBullet->Lock(0, 0, (void**)&pVtx, 0);
-
-		pVtx += nCnt * 4;
 
 		//球の位置を更新
 
@@ -288,38 +309,13 @@ void MoveBullet(int nCnt)
 		g_aBullet[nCnt].ScreenPos.x += g_aBullet[nCnt].move.x;
 
 		g_aBullet[nCnt].ScreenPos.y += g_aBullet[nCnt].move.y;
-		//頂点座標の更新
 
-		pVtx[0].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
-
-		pVtx[0].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
-
-		pVtx[0].pos.z = 0.0f;
-
-		pVtx[1].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
-
-		pVtx[1].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
-
-		pVtx[1].pos.z = 0.0f;
-
-		pVtx[2].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
-
-		pVtx[2].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
-
-		pVtx[2].pos.z = 0.0f;
-
-		pVtx[3].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
-
-		pVtx[3].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
-
-		pVtx[3].pos.z = 0.0f;
-
-		if (g_aBullet[nCnt].pos.x < 0 || SCREEN_WIDTH < g_aBullet[nCnt].pos.x)
+		if (g_aBullet[nCnt].ScreenPos.x < 0 || SCREEN_WIDTH < g_aBullet[nCnt].ScreenPos.x)
 		{ //球の位置が画面外に出た
 			g_aBullet[nCnt].bUse = false; //使用していない状態にする
 		}
 
-		if (g_aBullet[nCnt].pos.y < 0 || SCREEN_HEIGHT < g_aBullet[nCnt].pos.y)
+		if (g_aBullet[nCnt].ScreenPos.y < 0 || SCREEN_HEIGHT < g_aBullet[nCnt].ScreenPos.y)
 		{ //球の位置が画面外に出た
 			g_aBullet[nCnt].bUse = false; //使用していない状態にする
 		}

@@ -9,6 +9,7 @@
 
 #include "camera.h"
 #include "input.h"
+#include "stoptime.h"
 
 //グローバル変数
 
@@ -172,6 +173,12 @@ void UpdateScaffold(void)
 
 	VERTEX_2D* pVtx;
 
+	if (GetStopTime()->bStopTime == false)
+	{ //時間停止中じゃない場合
+
+		//時間停止中できないもの
+
+	}
 	//頂点バッファをロックし、頂点データへのポインタを取得
 
 	g_pVtxBuffScaffold->Lock(0, 0, (void**)&pVtx, 0);

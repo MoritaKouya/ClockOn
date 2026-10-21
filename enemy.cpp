@@ -12,6 +12,7 @@
 #include "player.h"
 #include "scaffold.h"
 #include "sound.h"
+#include "stoptime.h"
 
 //グローバル変数
 
@@ -224,15 +225,53 @@ void UpdateEnemy(void)
 
 			g_aEnemy[nCntEnemy].ScreenPos.y = g_aEnemy[nCntEnemy].pos.y - GetPosCamera()->y;
 
-			StateEnemy(nCntEnemy); //状態
+			if (GetStopTime()->bStopTime == false)
+			{ //時間停止中じゃない場合
 
-			if (g_aEnemy[nCntEnemy].type != ENEMYTYPE_4)
-			{
+				StateEnemy(nCntEnemy); //状態
 
-				CollisionPlayer(&g_aEnemy[nCntEnemy]); //当たり判定
+				if (g_aEnemy[nCntEnemy].type != ENEMYTYPE_4)
+				{
+
+					CollisionPlayer(&g_aEnemy[nCntEnemy]); //当たり判定
+				}
+
+				ActionEnemy(nCntEnemy); //行動
 			}
 
-			ActionEnemy(nCntEnemy); //行動
+			//頂点情報の設定
+
+			VERTEX_2D* pVtx;
+
+			//頂点バッファをロックし、頂点データへのポインタを取得
+
+			g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
+
+			pVtx[0].pos.x = g_aEnemy[nCntEnemy].ScreenPos.x - ENEMY_SIZE;
+
+			pVtx[0].pos.y = g_aEnemy[nCntEnemy].ScreenPos.y - (ENEMY_SIZE * 2);
+
+			pVtx[0].pos.z = 0.0f;
+
+			pVtx[1].pos.x = g_aEnemy[nCntEnemy].ScreenPos.x + ENEMY_SIZE;
+
+			pVtx[1].pos.y = g_aEnemy[nCntEnemy].ScreenPos.y - (ENEMY_SIZE * 2);
+
+			pVtx[1].pos.z = 0.0f;
+
+			pVtx[2].pos.x = g_aEnemy[nCntEnemy].ScreenPos.x - ENEMY_SIZE;
+
+			pVtx[2].pos.y = g_aEnemy[nCntEnemy].ScreenPos.y;
+
+			pVtx[2].pos.z = 0.0f;
+
+			pVtx[3].pos.x = g_aEnemy[nCntEnemy].ScreenPos.x + ENEMY_SIZE;
+
+			pVtx[3].pos.y = g_aEnemy[nCntEnemy].ScreenPos.y;
+
+			pVtx[3].pos.z = 0.0f;
+
+			g_pVtxBuffEnemy->Unlock();
 		}
 	}
 }
@@ -397,61 +436,12 @@ void MoveEnemy(int nCnt)
 			PLAYER_SIZE, PLAYER_SIZE * 2, false);
 	}
 
-	//壁に当たった時
+	//下に落ちたら破棄
 
-	if (g_aEnemy[nCnt].pos.x - ENEMY_SIZE < 0) //一番左に当たった場合
+	if (SCREEN_HEIGHT < g_aEnemy[nCnt].pos.y + ENEMY_SIZE) //一番下にあたった場合
 	{
-		g_aEnemy[nCnt].pos.x = ENEMY_SIZE; //g_player.posを一番左にする
+		g_aEnemy[nCnt].bUse = false;
 	}
-	else if (SCREEN_WIDTH < g_aEnemy[nCnt].pos.x + ENEMY_SIZE) //一番右に当たった場合
-	{
-		g_aEnemy[nCnt].pos.x = SCREEN_WIDTH - ENEMY_SIZE; //g_player.posを一番右にする
-	}
-
-	if (g_aEnemy[nCnt].pos.y - ENEMY_SIZE < 0) //一番上にあたった場合
-	{
-		g_aEnemy[nCnt].pos.y = ENEMY_SIZE; //g_player.posを一番上にする
-	}
-	else if (SCREEN_HEIGHT < g_aEnemy[nCnt].pos.y + ENEMY_SIZE) //一番下にあたった場合
-	{
-		g_aEnemy[nCnt].pos.y = SCREEN_HEIGHT - ENEMY_SIZE; //g_player.posを一番下にする
-	}
-
-	//頂点情報の設定
-
-	VERTEX_2D* pVtx;
-
-	//頂点バッファをロックし、頂点データへのポインタを取得
-
-	g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
-
-	pVtx += nCnt * 4;
-
-	pVtx[0].pos.x = g_aEnemy[nCnt].ScreenPos.x - ENEMY_SIZE;
-
-	pVtx[0].pos.y = g_aEnemy[nCnt].ScreenPos.y - (ENEMY_SIZE * 2);
-
-	pVtx[0].pos.z = 0.0f;
-
-	pVtx[1].pos.x = g_aEnemy[nCnt].ScreenPos.x + ENEMY_SIZE;
-
-	pVtx[1].pos.y = g_aEnemy[nCnt].ScreenPos.y - (ENEMY_SIZE * 2);
-
-	pVtx[1].pos.z = 0.0f;
-
-	pVtx[2].pos.x = g_aEnemy[nCnt].ScreenPos.x - ENEMY_SIZE;
-
-	pVtx[2].pos.y = g_aEnemy[nCnt].ScreenPos.y;
-
-	pVtx[2].pos.z = 0.0f;
-
-	pVtx[3].pos.x = g_aEnemy[nCnt].ScreenPos.x + ENEMY_SIZE;
-
-	pVtx[3].pos.y = g_aEnemy[nCnt].ScreenPos.y;
-
-	pVtx[3].pos.z = 0.0f;
-
-	g_pVtxBuffEnemy->Unlock();
 }
 //===================
 // 敵の描画処理
