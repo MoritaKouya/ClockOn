@@ -10,6 +10,9 @@
 #include "block.h"
 
 #include "bullet.h"
+
+#include "camera.h"
+
 //
 //#include "explosion.h"
 //
@@ -66,6 +69,8 @@ void InitBullet(void)
 		g_aBullet[nCntBullet].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //位置
 
 		g_aBullet[nCntBullet].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動量
+
+		g_aBullet[nCntBullet].ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //画面上の位置を初期化
 
 		g_aBullet[nCntBullet].nLife = 0; //寿命
 
@@ -200,6 +205,12 @@ void UpdateBullet(void)
 		if (g_aBullet[nCntBullet].bUse == true)
 		{//球が使用されている
 
+			//画面上の弾の位置を計算
+
+			g_aBullet[nCntBullet].ScreenPos.x = g_aBullet[nCntBullet].pos.x - GetPosCamera()->x;
+
+			g_aBullet[nCntBullet].ScreenPos.y = g_aBullet[nCntBullet].pos.y - GetPosCamera()->y;
+
 			//移動
 
 			MoveBullet(nCntBullet);
@@ -272,29 +283,34 @@ void MoveBullet(int nCnt)
 
 		g_aBullet[nCnt].pos.y += g_aBullet[nCnt].move.y;
 
+		//画面上の位置を更新
+
+		g_aBullet[nCnt].ScreenPos.x += g_aBullet[nCnt].move.x;
+
+		g_aBullet[nCnt].ScreenPos.y += g_aBullet[nCnt].move.y;
 		//頂点座標の更新
 
-		pVtx[0].pos.x = g_aBullet[nCnt].pos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
+		pVtx[0].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
 
-		pVtx[0].pos.y = g_aBullet[nCnt].pos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
+		pVtx[0].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.75f) * BULLET_SIZE;
 
 		pVtx[0].pos.z = 0.0f;
 
-		pVtx[1].pos.x = g_aBullet[nCnt].pos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
+		pVtx[1].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
 
-		pVtx[1].pos.y = g_aBullet[nCnt].pos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
+		pVtx[1].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.75f) * BULLET_SIZE;
 
 		pVtx[1].pos.z = 0.0f;
 
-		pVtx[2].pos.x = g_aBullet[nCnt].pos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
+		pVtx[2].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
 
-		pVtx[2].pos.y = g_aBullet[nCnt].pos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
+		pVtx[2].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle - D3DX_PI * 0.25f) * BULLET_SIZE;
 
 		pVtx[2].pos.z = 0.0f;
 
-		pVtx[3].pos.x = g_aBullet[nCnt].pos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
+		pVtx[3].pos.x = g_aBullet[nCnt].ScreenPos.x + sinf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
 
-		pVtx[3].pos.y = g_aBullet[nCnt].pos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
+		pVtx[3].pos.y = g_aBullet[nCnt].ScreenPos.y + cosf(-g_aBullet[nCnt].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
 
 		pVtx[3].pos.z = 0.0f;
 

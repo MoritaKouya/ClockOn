@@ -7,6 +7,8 @@
 
 #include "block.h"
 
+#include "camera.h"
+
 //グローバル変数
 
 LPDIRECT3DTEXTURE9 g_pTextureBlock = NULL; //テクスチャへのポインタ
@@ -42,6 +44,8 @@ void InitBlock(void)
 	for (nCntBlock = 0; nCntBlock < MAX_BLOCK; nCntBlock++)
 	{
 		g_aBlock[nCntBlock].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+		g_aBlock[nCntBlock].ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 		g_aBlock[nCntBlock].fWidth = BLOCK_SIZE; //幅
 
@@ -165,7 +169,53 @@ void UninitBlock(void)
 //==============
 void UpdateBlock(void)
 {
-	
+	int nCount;
+
+	VERTEX_2D* pVtx;
+
+	//頂点バッファをロックし、頂点データへのポインタを取得
+
+	g_pVtxBuffBlock->Lock(0, 0, (void**)&pVtx, 0);
+
+	for (nCount = 0; nCount < MAX_BLOCK; nCount++, pVtx += 4)
+	{
+		if (g_aBlock[nCount].bUse == true)
+		{
+			//画面上のブロックの位置を計算
+
+			g_aBlock[nCount].ScreenPos.x = g_aBlock[nCount].pos.x - GetPosCamera()->x;
+
+			g_aBlock[nCount].ScreenPos.y = g_aBlock[nCount].pos.y - GetPosCamera()->y;
+
+			//頂点座標の設定
+
+			pVtx[0].pos.x = g_aBlock[nCount].ScreenPos.x - g_aBlock[nCount].fWidth;
+
+			pVtx[0].pos.y = g_aBlock[nCount].ScreenPos.y - g_aBlock[nCount].fHeight;
+
+			pVtx[0].pos.z = 0.0f;
+
+			pVtx[1].pos.x = g_aBlock[nCount].ScreenPos.x + g_aBlock[nCount].fWidth;
+
+			pVtx[1].pos.y = g_aBlock[nCount].ScreenPos.y - g_aBlock[nCount].fHeight;
+
+			pVtx[1].pos.z = 0.0f;
+
+			pVtx[2].pos.x = g_aBlock[nCount].ScreenPos.x - g_aBlock[nCount].fWidth;
+
+			pVtx[2].pos.y = g_aBlock[nCount].ScreenPos.y + g_aBlock[nCount].fHeight;
+
+			pVtx[2].pos.z = 0.0f;
+
+			pVtx[3].pos.x = g_aBlock[nCount].ScreenPos.x + g_aBlock[nCount].fWidth;
+
+			pVtx[3].pos.y = g_aBlock[nCount].ScreenPos.y + g_aBlock[nCount].fHeight;
+
+			pVtx[3].pos.z = 0.0f;
+		}
+	}
+
+	g_pVtxBuffBlock->Unlock();
 }
 
 //==============

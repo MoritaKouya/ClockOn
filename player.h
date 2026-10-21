@@ -51,6 +51,8 @@ typedef struct
 
 	D3DXVECTOR3 posOld;//前回のフレームの位置
 
+	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
+
 	D3DXVECTOR3 rot; //向き
 
 	PLAYERSTATE state; //状態
@@ -101,13 +103,13 @@ void UpdatePlayer(void);
 
 void MovePlayer(void); //移動
 
-void RotatePlayer(void); //回転
-
 void StatePlayer(void); //状態
 
 void ShootBallet(void); //球の発射
 
 float CalcAngle(D3DXVECTOR3 pos); //照準との角度計算
+
+void MovePlayerPos(void); //頂点座標の移動
 
 //描画
 

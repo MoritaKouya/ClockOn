@@ -7,6 +7,7 @@
 #include "enemy.h"
 
 #include "block.h"
+#include "camera.h"
 #include "item.h"
 #include "player.h"
 #include "scaffold.h"
@@ -66,6 +67,8 @@ void InitEnemy(void)
 		g_aEnemy[nCntEnemy].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //位置
 
 		g_aEnemy[nCntEnemy].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動
+
+		g_aEnemy[nCntEnemy].ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //画面上の位置を初期化
 
 		g_aEnemy[nCntEnemy].type = ENEMYTYPE_0; //種類
 
@@ -214,6 +217,12 @@ void UpdateEnemy(void)
 	{
 		if (g_aEnemy[nCntEnemy].bUse == true)
 		{ //敵が使われている場合
+
+			//スクリーン上の敵の位置を計算
+
+			g_aEnemy[nCntEnemy].ScreenPos.x = g_aEnemy[nCntEnemy].pos.x - GetPosCamera()->x;
+
+			g_aEnemy[nCntEnemy].ScreenPos.y = g_aEnemy[nCntEnemy].pos.y - GetPosCamera()->y;
 
 			StateEnemy(nCntEnemy); //状態
 
@@ -371,6 +380,12 @@ void MoveEnemy(int nCnt)
 
 	g_aEnemy[nCnt].pos.y += g_aEnemy[nCnt].move.y;
 
+	//画面上の位置を更新
+
+	g_aEnemy[nCnt].ScreenPos.x += g_aEnemy[nCnt].move.x;
+
+	g_aEnemy[nCnt].ScreenPos.y += g_aEnemy[nCnt].move.y;
+
 	g_aEnemy[nCnt].bJump = CollisionBlock(&g_aEnemy[nCnt].pos, &g_aEnemy[nCnt].posOld, &g_aEnemy[nCnt].move,
 		PLAYER_SIZE, PLAYER_SIZE * 2); //着地時だけジャンプが可能
 
@@ -412,27 +427,27 @@ void MoveEnemy(int nCnt)
 
 	pVtx += nCnt * 4;
 
-	pVtx[0].pos.x = g_aEnemy[nCnt].pos.x - ENEMY_SIZE;
+	pVtx[0].pos.x = g_aEnemy[nCnt].ScreenPos.x - ENEMY_SIZE;
 
-	pVtx[0].pos.y = g_aEnemy[nCnt].pos.y - (ENEMY_SIZE * 2);
+	pVtx[0].pos.y = g_aEnemy[nCnt].ScreenPos.y - (ENEMY_SIZE * 2);
 
 	pVtx[0].pos.z = 0.0f;
 
-	pVtx[1].pos.x = g_aEnemy[nCnt].pos.x + ENEMY_SIZE;
+	pVtx[1].pos.x = g_aEnemy[nCnt].ScreenPos.x + ENEMY_SIZE;
 
-	pVtx[1].pos.y = g_aEnemy[nCnt].pos.y - (ENEMY_SIZE * 2);
+	pVtx[1].pos.y = g_aEnemy[nCnt].ScreenPos.y - (ENEMY_SIZE * 2);
 
 	pVtx[1].pos.z = 0.0f;
 
-	pVtx[2].pos.x = g_aEnemy[nCnt].pos.x - ENEMY_SIZE;
+	pVtx[2].pos.x = g_aEnemy[nCnt].ScreenPos.x - ENEMY_SIZE;
 
-	pVtx[2].pos.y = g_aEnemy[nCnt].pos.y;
+	pVtx[2].pos.y = g_aEnemy[nCnt].ScreenPos.y;
 
 	pVtx[2].pos.z = 0.0f;
 
-	pVtx[3].pos.x = g_aEnemy[nCnt].pos.x + ENEMY_SIZE;
+	pVtx[3].pos.x = g_aEnemy[nCnt].ScreenPos.x + ENEMY_SIZE;
 
-	pVtx[3].pos.y = g_aEnemy[nCnt].pos.y;
+	pVtx[3].pos.y = g_aEnemy[nCnt].ScreenPos.y;
 
 	pVtx[3].pos.z = 0.0f;
 

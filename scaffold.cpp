@@ -7,6 +7,7 @@
 
 #include "scaffold.h"
 
+#include "camera.h"
 #include "input.h"
 
 //グローバル変数
@@ -167,7 +168,51 @@ void UninitScaffold(void)
 //==============
 void UpdateScaffold(void)
 {
+	int nCount;
 
+	VERTEX_2D* pVtx;
+
+	//頂点バッファをロックし、頂点データへのポインタを取得
+
+	g_pVtxBuffScaffold->Lock(0, 0, (void**)&pVtx, 0);
+
+	for (nCount = 0; nCount < MAX_SCAFFOLD; nCount++, pVtx += 4)
+	{
+		if (g_aScaffold[nCount].bUse == true)
+		{
+			//画面上のブロックの位置を計算
+
+			g_aScaffold[nCount].ScreenPos.x = g_aScaffold[nCount].pos.x - GetPosCamera()->x;
+
+			g_aScaffold[nCount].ScreenPos.y = g_aScaffold[nCount].pos.y - GetPosCamera()->y;
+
+			//頂点座標の設定
+
+			pVtx[0].pos.x = g_aScaffold[nCount].ScreenPos.x - g_aScaffold[nCount].fWidth;
+
+			pVtx[0].pos.y = g_aScaffold[nCount].ScreenPos.y - g_aScaffold[nCount].fHeight;
+
+			pVtx[0].pos.z = 0.0f;
+
+			pVtx[1].pos.x = g_aScaffold[nCount].ScreenPos.x + g_aScaffold[nCount].fWidth;
+
+			pVtx[1].pos.y = g_aScaffold[nCount].ScreenPos.y - g_aScaffold[nCount].fHeight;
+
+			pVtx[1].pos.z = 0.0f;
+
+			pVtx[2].pos.x = g_aScaffold[nCount].ScreenPos.x - g_aScaffold[nCount].fWidth;
+
+			pVtx[2].pos.y = g_aScaffold[nCount].ScreenPos.y;
+
+			pVtx[2].pos.z = 0.0f;
+
+			pVtx[3].pos.x = g_aScaffold[nCount].ScreenPos.x + g_aScaffold[nCount].fWidth;
+
+			pVtx[3].pos.y = g_aScaffold[nCount].ScreenPos.y;
+		}
+	}
+
+	g_pVtxBuffScaffold->Unlock();
 }
 
 //==============

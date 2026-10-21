@@ -11,7 +11,7 @@
 
 //マクロ定義
 
-#define MAX_SCAFFOLD (128) //足場の最大数
+#define MAX_SCAFFOLD (1024) //足場の最大数
 
 #define SCAFFOLD_SIZE (20) //足場の半径
 
@@ -29,6 +29,8 @@ typedef enum
 typedef struct
 {
 	D3DXVECTOR3 pos; //位置
+
+	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
 
 	float fWidth; //幅
 

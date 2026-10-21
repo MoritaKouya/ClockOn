@@ -53,6 +53,8 @@ typedef struct
 
 	D3DXVECTOR3 move; //移動
 
+	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
+
 	ENEMYTYPE type; //種類
 
 	ENEMYSTATE state; //状態

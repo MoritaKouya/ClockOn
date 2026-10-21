@@ -26,6 +26,8 @@ typedef struct
 
 	D3DXVECTOR3 move; //移動量
 
+	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
+
 	int nLife; //寿命
 
 	int nDamage; //ダメージ量

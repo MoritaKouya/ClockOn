@@ -6,6 +6,7 @@
 //=============================
 #include "player.h"
 
+#include "camera.h"
 #include "input.h"
 #include "item.h"
 #include "bullet.h"
@@ -87,6 +88,8 @@ void InitPlayer(void)
 	g_player.pos = D3DXVECTOR3(500, 500, 0.0f); //位置を初期化
 
 	g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動量を初期化
+
+	g_player.ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //画面上の位置を初期化
 
 	g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //向きを初期化する（ｚ値を使用）
 
@@ -239,6 +242,12 @@ void UninitPlayer(void)
 //==================================
 void UpdatePlayer(void)
 {
+	//スクリーン上のプレイヤーの位置を計算
+
+	g_player.ScreenPos.x = g_player.pos.x - GetPosCamera()->x;
+
+	g_player.ScreenPos.y = g_player.pos.y - GetPosCamera()->y;
+
 	//移動
 
 	MovePlayer();
@@ -255,11 +264,17 @@ void UpdatePlayer(void)
 
 	ShootBallet();
 
+	//アイテムの当たり判定
+
 	CollisionItem();
 	
 	////プレイヤーのエフェクト
 
 	//SetPlayerEffect(g_player.pos, g_player.EffectCol,g_player.rot, PLAYER_SIZE + 10, 120);
+
+	//頂点座標の更新
+
+	MovePlayerPos();
 }
 //=========================
 // プレイヤーの移動処理
@@ -330,84 +345,6 @@ void MovePlayer(void)
 			g_player.nDashCounter = 30;
 		}
 	}
-
-	//前回の位置を保存
-
-	g_player.posOld = g_player.pos;
-
-	//位置を更新
-
-	g_player.pos.x += g_player.move.x;
-
-	g_player.pos.y += g_player.move.y;
-
-	//ブロックとの当たり判定
-
-	g_player.bJump = CollisionBlock(&g_player.pos, &g_player.posOld, &g_player.move,
-		g_player.fWidth, g_player.fHeight); //着地時だけジャンプが可能
-
-	if (g_player.bJump == false)
-	{
-		g_player.bJump = CollisionScaffold(&g_player.pos, &g_player.posOld, &g_player.move,
-			g_player.fWidth, g_player.fHeight, true); //着地時だけジャンプが可能
-	}
-
-	//壁に当たった時
-
-	if (g_player.pos.x + g_player.fWidth < 0) //一番左に当たった場合
-	{
-		//g_player.pos.x = PLAYER_SIZE; //g_player.posを一番左にする
-
-		g_player.pos.x = SCREEN_WIDTH + g_player.fWidth;
-
-
-	}
-	else if (SCREEN_WIDTH < g_player.pos.x - g_player.fWidth) //一番右に当たった場合
-	{
-		//g_player.pos.x = SCREEN_WIDTH - PLAYER_SIZE; //g_player.posを一番右にする
-
-		g_player.pos.x = -g_player.fWidth; //g_player.posを一番左にする
-	}
-
-	//移動量の更新
-
-	g_player.move.x += (0.0f - g_player.move.x) * 0.1f;
-
-	//頂点バッファをロックし、頂点情報へのポインタを取得
-
-	VERTEX_2D* pVtx; //頂点情報へのポインタ
-
-	g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
-
-	//頂点座標の設定
-
-	pVtx[0].pos.x = g_player.pos.x - g_player.fWidth;
-
-	pVtx[0].pos.y = g_player.pos.y - g_player.fHeight;
-
-	pVtx[0].pos.z = 0.0f;
-
-	pVtx[1].pos.x = g_player.pos.x + g_player.fWidth;
-
-	pVtx[1].pos.y = g_player.pos.y - g_player.fHeight;
-
-	pVtx[1].pos.z = 0.0f;
-
-	pVtx[2].pos.x = g_player.pos.x - g_player.fWidth;
-
-	pVtx[2].pos.y = g_player.pos.y;
-
-	pVtx[2].pos.z = 0.0f;
-
-	pVtx[3].pos.x = g_player.pos.x + g_player.fWidth;
-
-	pVtx[3].pos.y = g_player.pos.y;
-
-	pVtx[3].pos.z = 0.0f;
-
-	//頂点バッファをアンロックする
-
-	g_pVtxBuffPlayer->Unlock();
 }
 ////=========================
 //// プレイヤーの状態処理
@@ -496,13 +433,83 @@ void ShootBallet(void)
 //===================
 float CalcAngle(D3DXVECTOR3 pos)
 {
-	float dx = pos.x - g_player.pos.x; //x座標の差
+	float dx = pos.x - g_player.ScreenPos.x; //x座標の差
 
-	float dy = pos.y - (g_player.pos.y - PLAYER_SIZE); //y座標の差
+	float dy = pos.y - (g_player.ScreenPos.y - PLAYER_SIZE); //y座標の差
 
 	float fangle = (float)atan2(dy, dx); //角度
 
 	return fangle; //角度を返す
+}
+//==================================
+// プレイヤーの頂点座標の移動処理
+//==================================
+void MovePlayerPos()
+{
+	//前回の位置を保存
+
+	g_player.posOld = g_player.pos;
+	
+	//位置を更新
+
+	g_player.pos.x += g_player.move.x;
+
+	g_player.pos.y += g_player.move.y;
+
+	g_player.ScreenPos.x += g_player.move.x;
+
+	g_player.ScreenPos.y += g_player.move.y;
+
+	//ブロックとの当たり判定
+
+	g_player.bJump = CollisionBlock(&g_player.pos, &g_player.posOld, &g_player.move,
+		g_player.fWidth, g_player.fHeight); //着地時だけジャンプが可能
+
+	if (g_player.bJump == false)
+	{
+		g_player.bJump = CollisionScaffold(&g_player.pos, &g_player.posOld, &g_player.move,
+			g_player.fWidth, g_player.fHeight, true); //着地時だけジャンプが可能
+	}
+
+	//移動量の更新
+
+	g_player.move.x += (0.0f - g_player.move.x) * 0.1f;
+
+	//頂点バッファをロックし、頂点情報へのポインタを取得
+
+	VERTEX_2D* pVtx; //頂点情報へのポインタ
+
+	g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
+
+	//頂点座標の設定
+
+	pVtx[0].pos.x = g_player.ScreenPos.x - g_player.fWidth;
+
+	pVtx[0].pos.y = g_player.ScreenPos.y - g_player.fHeight;
+
+	pVtx[0].pos.z = 0.0f;
+
+	pVtx[1].pos.x = g_player.ScreenPos.x + g_player.fWidth;
+
+	pVtx[1].pos.y = g_player.ScreenPos.y - g_player.fHeight;
+
+	pVtx[1].pos.z = 0.0f;
+
+	pVtx[2].pos.x = g_player.ScreenPos.x - g_player.fWidth;
+
+	pVtx[2].pos.y = g_player.ScreenPos.y;
+
+	pVtx[2].pos.z = 0.0f;
+
+	pVtx[3].pos.x = g_player.ScreenPos.x + g_player.fWidth;
+
+	pVtx[3].pos.y = g_player.ScreenPos.y;
+
+	pVtx[3].pos.z = 0.0f;
+
+	//頂点バッファをアンロックする
+
+	g_pVtxBuffPlayer->Unlock();
 }
 
 //==================================
