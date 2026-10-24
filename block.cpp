@@ -244,13 +244,21 @@ void DrawBlock(void)
 		if (g_aBlock[nCntBlock].bUse == true)
 		{ //ブロックが使用されている場合
 
-			//テクスチャの設定
+			//カメラに写ったら
 
-			pDevice->SetTexture(0, g_pTextureBlock);
+			if (0 < g_aBlock[nCntBlock].ScreenPos.x && g_aBlock[nCntBlock].ScreenPos.x < SCREEN_WIDTH
 
-		//ポリゴンの描画
-												  //描画を開始する頂点インデックス
-			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntBlock * 4, 2);
+				&& 0 < g_aBlock[nCntBlock].ScreenPos.y && g_aBlock[nCntBlock].ScreenPos.y < SCREEN_HEIGHT)
+			{
+
+				//テクスチャの設定
+
+				pDevice->SetTexture(0, g_pTextureBlock);
+
+				//ポリゴンの描画
+														  //描画を開始する頂点インデックス
+				pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntBlock * 4, 2);
+			}
 		}
 	}
 }
@@ -334,55 +342,63 @@ bool CollisionBlock(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMove,
 	{
 		if (g_aBlock[nCount].bUse == true)
 		{
-			//縦の当たり判定
+			//カメラに写ったら
 
-			if (g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPosOld->x + fWidth
+			if (0 < g_aBlock[nCount].ScreenPos.x && g_aBlock[nCount].ScreenPos.x < SCREEN_WIDTH
 
-				&& pPosOld->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
-			{ //横の判定
-				if (pPosOld->y <= g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight
+				&& 0 < g_aBlock[nCount].ScreenPos.y && g_aBlock[nCount].ScreenPos.y < SCREEN_HEIGHT)
+			{
 
-					&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPos->y)
-				{ //上から下
-					bLanding = true; //ジャンプが可能
+				//縦の当たり判定
 
-					pPos->y = g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight; //プレイヤーの位置をブロックの上にする
+				if (g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPosOld->x + fWidth
 
-					pMove->y = 0.0f;
+					&& pPosOld->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
+				{ //横の判定
+					if (pPosOld->y <= g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight
+
+						&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPos->y)
+					{ //上から下
+						bLanding = true; //ジャンプが可能
+
+						pPos->y = g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight; //プレイヤーの位置をブロックの上にする
+
+						pMove->y = 0.0f;
+					}
+					else if (g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight <= pPosOld->y - fHeight
+
+						&& pPos->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight)
+					{ //下から上
+
+						pPos->y = g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight + fHeight; //プレイヤーの位置をブロックの上にする
+
+						pMove->y = 0.0f;
+					}
 				}
-				else if (g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight <= pPosOld->y - fHeight
 
-					&& pPos->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight)
-				{ //下から上
+				//横の当たり判定
 
-					pPos->y = g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight + fHeight; //プレイヤーの位置をブロックの上にする
+				if (pPosOld->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight
 
-					pMove->y = 0.0f;
-				}
-			}
+					&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPosOld->y)
+				{ //縦の判定
 
-			//横の当たり判定
+					if (pPosOld->x + fWidth <= g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth
 
-			if (pPosOld->y - fHeight < g_aBlock[nCount].pos.y + g_aBlock[nCount].fHeight
+						&& g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPos->x + fWidth)
+					{ //左から右
+						pPos->x = g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth - fWidth;
 
-				&& g_aBlock[nCount].pos.y - g_aBlock[nCount].fHeight < pPosOld->y)
-			{ //縦の判定
+						pMove->x = 0.0f;
+					}
+					else if (g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth <= pPosOld->x - fWidth
 
-				if (pPosOld->x + fWidth <= g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth
+						&& pPos->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
+					{ //右から左
+						pPos->x = g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth + fWidth;
 
-					&& g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth < pPos->x + fWidth)
-				{ //左から右
-					pPos->x = g_aBlock[nCount].pos.x - g_aBlock[nCount].fWidth - fWidth;
-
-					pMove->x = 0.0f;
-				}
-				else if (g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth <= pPosOld->x - fWidth
-
-					&& pPos->x - fWidth < g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth)
-				{ //右から左
-					pPos->x = g_aBlock[nCount].pos.x + g_aBlock[nCount].fWidth + fWidth;
-
-					pMove->x = 0.0f;
+						pMove->x = 0.0f;
+					}
 				}
 			}
 		}

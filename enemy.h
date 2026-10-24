@@ -13,7 +13,7 @@
 
 #define MAX_ENEMY (32) //敵の最大数
 
-#define ENEMY_SIZE (50) //敵の中心からの対角線の長さ
+#define ENEMY_SIZE (40) //敵の中心からの対角線の長さ
 
 //敵の状態の列挙型定義
 
@@ -32,16 +32,21 @@ typedef enum
 {
 	ENEMYTYPE_0 = 0, //UFO
 
-	ENEMYTYPE_1, //金UFO
-
-	ENEMYTYPE_2, //突撃UFO
-
-	ENEMYTYPE_3, //追尾UFO
-
-	ENEMYTYPE_4, //ボムUFO
-
 	ENEMYTYPE_MAX
 }ENEMYTYPE;
+
+//敵の種類の構造体定義
+
+typedef struct
+{
+	ENEMYTYPE type; //種類
+
+	int nWeapon; //武器
+
+	int nLife; //体力
+
+	float fSpeed; //移動速度
+}EnemyInfo;
 
 //敵構造体の定義
 
@@ -55,21 +60,25 @@ typedef struct
 
 	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
 
-	ENEMYTYPE type; //種類
-
 	ENEMYSTATE state; //状態
+
+	EnemyInfo EnemyInfo; //敵の種類
 
 	int nCounterState; //状態カウンター
 
 	int nCounterAction; //行動カウンター
 
-	int nLife; //体力
-	
-	float fSpeed; //移動速度
+	int nCountterAnimEnemy; //アニメーションカウンター
+
+	int nPatternAnimEnemy; //アニメーションパターンNo
 
 	float nAnglePlayer; //プレイヤーとの角度
 
 	bool bJump; //ジャンプできるかどうか
+
+	bool bRightMove; //向き(true;右向きfalse;左向き)
+
+	bool nAttack;
 
 	bool bUse; //使用しているかどうか
 }Enemy;
@@ -78,7 +87,9 @@ typedef struct
 
 //初期化
 
-void InitEnemy(void); 
+void InitEnemy(void);
+
+void LoadEnemy(void); //敵の情報のロード処理
 
 //終了
 
@@ -89,6 +100,8 @@ void UninitEnemy(void);
 void UpdateEnemy(void); 
 
 void StateEnemy(int nCnt); //状態
+
+void AnimEnemy(int nCnt); //アニメーション
 
 //行動
 

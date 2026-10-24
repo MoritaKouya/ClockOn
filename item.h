@@ -15,7 +15,7 @@
 
 #define MAX_ITEM (64)
 
-#define ITEM_SIZE (20) //照準のサイズ
+#define ITEM_SIZE (40) //照準のサイズ
 
 //アイテムの種類の列挙型定義
 
@@ -35,6 +35,8 @@ typedef struct
 	D3DXVECTOR3 posOrigin; //原点
 
 	D3DXVECTOR3 posOld; //前フレームの位置
+
+	D3DXVECTOR3 ScreenPos; //スクリーン上の位置
 
 	D3DXVECTOR3 move; //移動量
 
@@ -74,7 +76,7 @@ void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 move, ITEMTYPE type);
 
 void HitItem(Item* pItem);
 
-void HitItem00(void); //時計のヒット処理
+void HitItemTimer(void); //時計のヒット処理
 
 //アイテムの獲得処理
 

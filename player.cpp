@@ -7,11 +7,14 @@
 #include "player.h"
 
 #include "camera.h"
+#include "effect.h"
+#include "fade.h"
 #include "input.h"
 #include "item.h"
 #include "bullet.h"
 #include "aim.h"
 #include "block.h"
+#include "laser.h"
 #include "scaffold.h"
 #include "sound.h"
 
@@ -19,13 +22,21 @@
 
 //マクロ定義
 
-#define MAX_ANIM (1) //アニメーションの最大数
-
-#define MAX_COLUMN (1) //列数 
-
-#define MAX_LINES (1) //行数
-
 #define PLAYER_SPEED (1) //プレイヤーの速度
+
+#define SHOOT_RECOIL (3) //球の反動
+
+#define MAX_PLAYERTEXTURE (1) //プレイヤーのテクスチャ数
+
+//アニメーション
+
+#define MAX_ANIM_PLAYER (6) //アニメーションの最大数
+
+#define MAX_COLUMN_PLAYER (6) //列数 
+
+#define MAX_LINES_PLAYER (2) //行数
+
+#define ANIM_INTERVAL_PLAYER (12) //アニメーションの間隔
 
 //グローバル変数
 
@@ -45,29 +56,15 @@ bool g_rot; //trueで左falseで右
 
 D3DXVECTOR3 g_stick; //スティックの情報を代入する処理
 
-const char* g_aPlayerTexture_Path[8] =
+const char* g_aPlayerTexture_Path[MAX_PLAYERTEXTURE] =
 {
 	"Data/TEXTURE/PLAYER/player001.png",
-
-	"Data/TEXTURE/PLAYER/dedennne.png",
-
-	"Data/TEXTURE/PLAYER/player003.png",
-
-	"Data/TEXTURE/PLAYER/player004.png",
-
-	"Data/TEXTURE/PLAYER/player005.png",
-
-	"Data/TEXTURE/PLAYER/player006.png",
-
-	"Data/TEXTURE/PLAYER/player007.png",
-
-	"Data/TEXTURE/PLAYER/player008.png",
 }; //テクスチャの相対パスの構造体
 
 //==================================
 // プレイヤーの初期化処理
 //==================================
-void InitPlayer(void)
+void InitPlayer(D3DXVECTOR3 posPlayer)
 {
 	LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
 
@@ -77,7 +74,7 @@ void InitPlayer(void)
 
 	D3DXCreateTextureFromFile(pDevice,
 
-		g_aPlayerTexture_Path[1], //テクスチャのファイル名
+		g_aPlayerTexture_Path[0], //テクスチャのファイル名
 
 		&g_pTexturePlayer);
 
@@ -85,7 +82,7 @@ void InitPlayer(void)
 
 	g_nPatternAnimPlayer = 0; //パターンNo,を初期化する
 
-	g_player.pos = D3DXVECTOR3(500, 500, 0.0f); //位置を初期化
+	g_player.pos = posPlayer; //位置を初期化
 
 	g_player.move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動量を初期化
 
@@ -93,17 +90,15 @@ void InitPlayer(void)
 
 	g_player.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //向きを初期化する（ｚ値を使用）
 
+	g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+
 	g_player.state = PLAYERSTATE_NORMAL; //状態
 
 	g_player.nCounterState = 0; //状態カウンター
 
 	g_player.nBulletCounter = 0; //球のカウンター
 
-	g_player.nCntEnergy = 0; //エネルギー
-
 	g_player.nDashCounter = 0; //ダッシュのカウンター
-
-	g_player.nLevel = 1; //レベル
 
 	g_player.nLife = MAX_HP; //体力
 
@@ -117,7 +112,7 @@ void InitPlayer(void)
 
 	g_player.bJump = false; //ジャンプしているかどうか
 
-	g_player.bRightMove = true; //右向きかどうか
+	g_player.bRightAim = true; //右向きかどうか
 
 	//向きの初期化
 
@@ -190,23 +185,23 @@ void InitPlayer(void)
 
 	//頂点カラーの設定
 
-	pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[0].col = g_player.col;
 
-	pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[1].col = g_player.col;
 
-	pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[2].col = g_player.col;
 
-	pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	pVtx[3].col = g_player.col;
 
 	//テクスチャ座標の設定
 
-	pVtx[0].tex = D3DXVECTOR2((1.0f / MAX_COLUMN) * (g_nPatternAnimPlayer % MAX_COLUMN), (1.0f / MAX_LINES) * (g_nPatternAnimPlayer / MAX_COLUMN));
+	pVtx[0].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * (g_nPatternAnimPlayer % MAX_COLUMN_PLAYER), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim));
 
-	pVtx[1].tex = D3DXVECTOR2((1.0f / MAX_COLUMN) * ((g_nPatternAnimPlayer % MAX_COLUMN) + 1.0f), (1.0f / MAX_LINES) * (g_nPatternAnimPlayer / MAX_COLUMN));
+	pVtx[1].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * ((g_nPatternAnimPlayer % MAX_COLUMN_PLAYER) + 1.0f), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim));
 
-	pVtx[2].tex = D3DXVECTOR2((1.0f / MAX_COLUMN) * (g_nPatternAnimPlayer % MAX_COLUMN), (1.0f / MAX_LINES) * (g_nPatternAnimPlayer / MAX_COLUMN) + (1.0f / MAX_LINES));
+	pVtx[2].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * (g_nPatternAnimPlayer % MAX_COLUMN_PLAYER), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim) + (1.0f / MAX_LINES_PLAYER));
 
-	pVtx[3].tex = D3DXVECTOR2((1.0f / MAX_COLUMN) * ((g_nPatternAnimPlayer % MAX_COLUMN) + 1.0f), (1.0f / MAX_LINES) * (g_nPatternAnimPlayer / MAX_COLUMN) + (1.0f / MAX_LINES));
+	pVtx[3].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * ((g_nPatternAnimPlayer % MAX_COLUMN_PLAYER) + 1.0f), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim) + (1.0f / MAX_LINES_PLAYER));
 
 	//頂点バッファをアンロックする
 
@@ -256,25 +251,40 @@ void UpdatePlayer(void)
 
 	//RotatePlayer();
 
-	////状態
+	//状態
 
-	//StatePlayer();
+	StatePlayer();
+
+	//標準との角度を求める
+
+	D3DXVECTOR3 posAim = GetPosAim();
+
+	float AngleAim = CalcAngle(posAim);
 
 	//球の発射処理
 
-	ShootBallet();
+	ShootBallet(AngleAim);
 
 	//アイテムの当たり判定
 
 	CollisionItem();
-	
-	////プレイヤーのエフェクト
+
+	//アニメーション
+
+	AnimPlayer();
 
 	//SetPlayerEffect(g_player.pos, g_player.EffectCol,g_player.rot, PLAYER_SIZE + 10, 120);
 
-	//頂点座標の更新
+	//頂点情報の更新
 
-	MovePlayerPos();
+	UpdatepVtx();
+
+	//プレイヤーのエフェクト
+
+	if (1 < g_player.move.x || g_player.move.x < 0)
+	{
+		SetEffect(g_player.pos, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f);
+	}
 }
 //=========================
 // プレイヤーの移動処理
@@ -301,10 +311,7 @@ void MovePlayer(void)
 			if (GetKeyboardPress(DIK_D) != true || GetJoypadPress(JOYKEY_RIGHT) != true) //Dキーが押されていない場合
 			{
 				g_player.move.x += sinf(-D3DX_PI * 0.5f) * PLAYER_SPEED; //左にすすむ
-			}
-
-
-			g_player.bRightMove = false;
+			}	
 		}
 		else if (GetKeyboardPress(DIK_D) == true || GetJoypadPress(JOYKEY_RIGHT) == true) //Dキーが押された場合
 		{ //右移動
@@ -312,8 +319,6 @@ void MovePlayer(void)
 			//移動量を更新
 
 			g_player.move.x += sinf(D3DX_PI * 0.5f) * PLAYER_SPEED;
-
-			g_player.bRightMove = true;
 		}
 
 	}
@@ -346,51 +351,37 @@ void MovePlayer(void)
 		}
 	}
 }
-////=========================
-//// プレイヤーの状態処理
-////=========================
-//void StatePlayer(void)
-//{
-//	VERTEX_2D* pVtx; //頂点情報へのポインタ
-//
-//	g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
-//
-//	switch (g_player.state) //プレイヤーの状態
-//	{
-//	case PLAYERSTATE_NORMAL: //通常
-//
-//		break;
-//
-//	case PLAYERSTATE_DAMAGE: //ダメージ
-//
-//		g_player.nCounterState--; //カウンターステートを減らす
-//
-//		if (g_player.nCounterState <= 0) //カウンターステートが0になった
-//		{
-//			g_player.state = PLAYERSTATE_NORMAL; //プレイヤーの状態を通常にする
-//
-//			//頂点カラーの設定
-//
-//			pVtx[0].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-//
-//			pVtx[1].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-//
-//			pVtx[2].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-//
-//			pVtx[3].col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-//		}
-//
-//		break;
-//	}
-//
-//	//頂点バッファをアンロックする
-//
-//	g_pVtxBuffPlayer->Unlock();
-//}
+//=========================
+// プレイヤーの状態処理
+//=========================
+void StatePlayer(void)
+{
+	switch (g_player.state) //プレイヤーの状態
+	{
+	case PLAYERSTATE_NORMAL: //通常
+
+		break;
+
+	case PLAYERSTATE_DAMAGE: //ダメージ
+
+		g_player.nCounterState--; //カウンターステートを減らす
+
+		if (g_player.nCounterState <= 0) //カウンターステートが0になった
+		{
+			g_player.state = PLAYERSTATE_NORMAL; //プレイヤーの状態を通常にする
+
+			//頂点カラーの設定
+
+			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f,1.0f);
+		}
+
+		break;
+	}
+}
 //=========================
 // 球の発射処理
 //=========================
-void ShootBallet(void)
+void ShootBallet(float AngleAim)
 {
 	g_player.nBulletCounter--; //球のカウンターを減らす
 
@@ -398,10 +389,6 @@ void ShootBallet(void)
 	{
 		if (GetMousePress(MOUSEBOTTOM_LEFT) == true || GetRT() == true) //球の発射
 		{ //スペースキーが押された
-
-			D3DXVECTOR3 posAim = GetPosAim();
-
-			float AngleAim = CalcAngle(posAim);
 
 			//球の設定
 
@@ -411,15 +398,17 @@ void ShootBallet(void)
 
 				0.0f)
 
-				, D3DXVECTOR3(cosf(AngleAim) * 40.0f, sinf(AngleAim) * 40.0f, 0.0f),
-
-				100
+				, D3DXVECTOR3(cosf(AngleAim) * 40.0f, sinf(AngleAim) * 40.0f, 0.0f)
+				
+				,180
 
 				, g_player.nAttack
 
 				, AngleAim
 
 				, BULLETTYPE_PLAYER);
+
+			//バレットのカウンターを増やす
 
 			g_player.nBulletCounter = 30;
 
@@ -429,7 +418,7 @@ void ShootBallet(void)
 }
 
 //===================
-//角度計算
+//標準角度計算
 //===================
 float CalcAngle(D3DXVECTOR3 pos)
 {
@@ -439,12 +428,50 @@ float CalcAngle(D3DXVECTOR3 pos)
 
 	float fangle = (float)atan2(dy, dx); //角度
 
+	if (dx < 0)
+	{ //プレイヤーより標準が左にある場合
+
+		g_player.bRightAim = false; //プレイヤーの向きを左にする
+	}
+	else
+	{ //プレイヤーより標準が右にある場合
+		
+		g_player.bRightAim = true; //プレイヤーの向きを右向きにする
+	}
+
 	return fangle; //角度を返す
 }
+
 //==================================
-// プレイヤーの頂点座標の移動処理
+// プレイヤーの頂点情報の更新処理
 //==================================
-void MovePlayerPos()
+void AnimPlayer(void)
+{
+	//カウンターをプラス
+
+	g_nCountterAnimPlayer++;
+
+	if (g_nCountterAnimPlayer == ANIM_INTERVAL_PLAYER)
+	{ //カウンターがアニメーション間隔分進んだ場合
+
+		//カウンターを初期化
+
+		g_nCountterAnimPlayer = 0;
+
+		//アニメーションのパターンをプラス
+
+		g_nPatternAnimPlayer++;
+
+		//アニメーションのパターンがリセットされるようにする
+
+		g_nPatternAnimPlayer %= MAX_ANIM_PLAYER;
+	}
+}
+
+//==================================
+// プレイヤーの頂点情報の更新処理
+//==================================
+void UpdatepVtx()
 {
 	//前回の位置を保存
 
@@ -471,6 +498,10 @@ void MovePlayerPos()
 			g_player.fWidth, g_player.fHeight, true); //着地時だけジャンプが可能
 	}
 
+	CollisionLaser(&g_player.pos, &g_player.posOld, &g_player.move,
+		g_player.fWidth, g_player.fHeight); //着地時だけジャンプが可能
+
+
 	//移動量の更新
 
 	g_player.move.x += (0.0f - g_player.move.x) * 0.1f;
@@ -481,7 +512,7 @@ void MovePlayerPos()
 
 	g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
 
-	//頂点座標の設定
+	//頂点座標の更新
 
 	pVtx[0].pos.x = g_player.ScreenPos.x - g_player.fWidth;
 
@@ -506,6 +537,32 @@ void MovePlayerPos()
 	pVtx[3].pos.y = g_player.ScreenPos.y;
 
 	pVtx[3].pos.z = 0.0f;
+
+	//頂点バッファをロックし、頂点データへのポインタを取得
+
+	g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
+
+	//頂点カラーの設定
+
+	pVtx[0].col = g_player.col;
+
+	pVtx[1].col = g_player.col;
+
+	pVtx[2].col = g_player.col;
+
+	pVtx[3].col = g_player.col;
+
+	g_pVtxBuffPlayer->Unlock();
+
+	//テクスチャ座標の更新
+
+	pVtx[0].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * (g_nPatternAnimPlayer % MAX_COLUMN_PLAYER), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim));
+
+	pVtx[1].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * ((g_nPatternAnimPlayer % MAX_COLUMN_PLAYER) + 1.0f), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim));
+
+	pVtx[2].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * (g_nPatternAnimPlayer % MAX_COLUMN_PLAYER), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim) + (1.0f / MAX_LINES_PLAYER));
+
+	pVtx[3].tex = D3DXVECTOR2((1.0f / MAX_COLUMN_PLAYER) * ((g_nPatternAnimPlayer % MAX_COLUMN_PLAYER) + 1.0f), (1.0f / MAX_LINES_PLAYER) * (g_player.bRightAim) + (1.0f / MAX_LINES_PLAYER));
 
 	//頂点バッファをアンロックする
 
@@ -550,120 +607,60 @@ Player* GetPlayer(void)
 	return &g_player; //敵の情報を返す
 }
 //
-////===================
-//// プレイヤーヒット処理
-////===================
-//void HitPlayer(HIT hit, int amount)
-//{
-//	switch (hit)
-//	{
-//	case HIT_BULLET: //球の場合
-//
-//	case HIT_ENEMY: //敵の場合
-//
-//		if (g_player.nCounterState == 0)
-//		{
-//			//サウンド
-//
-//			PlaySound(SOUND_LABEL_SE_PLAYERHIT);
-//
-//			//ダメージスクリーン
-//
-//			SetDamageScreen();
-//
-//			//プレイヤーのライフを減らす
-//
-//			g_player.nLife--;
-//
-//			//HPバーを減らす
-//
-//		/*	ModifyHpBer(g_player.nLife);*/
-//
-//			if (g_player.nLife <= 0) //プレイヤーの体力がなくなった
-//			{
-//				//リザルト画面
-//
-//				SetFade(MODE_RESULT);
-//			}
-//			else
-//			{
-//				//カウンターを設定
-//
-//				g_player.nCounterState = 75;
-//
-//				VERTEX_2D* pVtx;
-//
-//				g_player.state = PLAYERSTATE_DAMAGE;
-//
-//				//頂点バッファをロックし、頂点データへのポインタを取得
-//
-//				g_pVtxBuffPlayer->Lock(0, 0, (void**)&pVtx, 0);
-//
-//				//頂点カラーの設定
-//
-//				pVtx[0].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//				pVtx[1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//				pVtx[2].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//				pVtx[3].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//				g_pVtxBuffPlayer->Unlock();
-//			}
-//		}
-//
-//		break;
-//
-//	case HIT_ENERGY: //エネルギーの場合
-//
-//		PlaySound(SOUND_LABEL_SE_ENERGY);
-//
-//		g_player.nCntEnergy += amount; //エネルギーを加算
-//
-//		if (REQUIRED_ENERGY * g_player.nLevel <= g_player.nCntEnergy)
-//		{ //エネルギーがレベルアップに必要なエネルギー量を超えた場合
-//
-//			PlaySound(SOUND_LABEL_SE_LEVELUP);
-//
-//			g_player.nCntEnergy -= (REQUIRED_ENERGY * g_player.nLevel); //エネルギーをリセット
-//
-//			LevelUpp(&g_player.nLevel); //レベル
-//
-//			//ステータスの上昇
-//
-//			g_player.nAttack += g_player.nLevel; //攻撃力
-//
-//			if (g_player.nLevel % 5 == 0)
-//			{ //レベルが５の倍数分上がったら
-//
-//				g_player.nRate += 1; //連射力
-//			}
-//
-//			//ライフを増やす処理
-//
-//			if (g_player.nLife < 9)
-//			{ //ライフが9より低い場合
-//
-//				//プレイヤーのライフを増やす
-//
-//				g_player.nLife += 1;
-//			}
-//
-//			//HPバーを増やす
-//
-//			/*ModifyHpBer(g_player.nLife);*/
-//		}
-//
-//		//エネルギーバーの加算処理
-//
-//		AddEnergyBer(g_player.nCntEnergy, g_player.nLevel); //エネルギーバーの加算処理
-//
-//		break;
-//	}
-//
-//	ChangeLifeCount(g_player.nLife); //ライフカウント
-//}
+//===================
+// プレイヤーヒット処理
+//===================
+void HitPlayer(HIT hit, int amount)
+{
+	switch (hit)
+	{
+	case HIT_BULLET: //球の場合
+
+		break;
+
+	case HIT_ENEMY: //敵の場合
+
+		if (g_player.nCounterState == 0)
+		{
+			////ダメージスクリーン
+
+			//SetDamageScreen();
+
+			//プレイヤーのライフを減らす
+
+			g_player.nLife--;
+
+			//HPバーを減らす
+
+		/*	ModifyHpBer(g_player.nLife);*/
+
+			if (g_player.nLife <= 0) //プレイヤーの体力がなくなった
+			{
+				if (GetFade() == FADE_NONE)
+				{
+
+					//リザルト画面
+
+					SetFade(MODE_RESULT);
+				}
+			}
+			else
+			{
+				//カウンターを設定
+
+				g_player.nCounterState = 75;
+
+				g_player.state = PLAYERSTATE_DAMAGE;
+
+				g_player.col = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
+			}
+		}
+
+		break;
+
+	}
+
+}
 
 void CollisionItem(void)
 {

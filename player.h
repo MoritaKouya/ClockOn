@@ -57,13 +57,11 @@ typedef struct
 
 	PLAYERSTATE state; //状態
 
-	D3DXCOLOR EffectCol; //エフェクトの色
+	D3DXCOLOR col; //色
 
 	int nCounterState; //状態カウンター
 
 	int nBulletCounter; //球のカウント
-
-	int nCntEnergy; //エネルギーの個数
 
 	int nDashCounter; //ダッシュのカウンター
 
@@ -73,11 +71,10 @@ typedef struct
 
 	bool bJump; //ジャンプしているかどうか
 
-	bool bRightMove; //向き(true;右向きfalse;左向き)
+	bool bRightAim; //向き(true;右向きfalse;左向き)
+
 
 	//ステータス
-
-	int nLevel; //レベル
 
 	int nLife; //体力
 
@@ -91,7 +88,7 @@ typedef struct
 
 //初期化
 
-void InitPlayer(void); 
+void InitPlayer(D3DXVECTOR3 posPlayer);
 
 //終了
 
@@ -105,11 +102,13 @@ void MovePlayer(void); //移動
 
 void StatePlayer(void); //状態
 
-void ShootBallet(void); //球の発射
+void ShootBallet(float AngleAim); //球の発射
 
 float CalcAngle(D3DXVECTOR3 pos); //照準との角度計算
 
-void MovePlayerPos(void); //頂点座標の移動
+void AnimPlayer(void); //アニメーション
+
+void UpdatepVtx(void); //頂点座標の移動
 
 //描画
 

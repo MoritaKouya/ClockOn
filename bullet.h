@@ -67,6 +67,8 @@ void SetBullet(D3DXVECTOR3 pos, D3DXVECTOR3 move, int nLife, int nDamage, float 
 
 void CollisionEnemy(Bullet* pBullet); //敵の当たり判定
 
+void CollisionItemBox(Bullet* pBullet); //ブロックの当たり判定
+
 void CollisionBlock(Bullet* pBullet); //ブロックの当たり判定
 //
 //void CollisionBoss(Bullet* pBullet); //ボスの当たり判定

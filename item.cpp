@@ -7,6 +7,7 @@
 #include "item.h"
 
 #include "block.h"
+#include "camera.h"
 #include "scaffold.h"
 #include "sound.h"
 #include "stoptime.h"
@@ -62,7 +63,9 @@ void InitItem(void)
 		g_aItem[nCount].posOrigin = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //位置
 
 		g_aItem[nCount].posOld = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //前フレームの位置
-
+		
+		g_aItem[nCount].ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //画面上の位置
+		
 		g_aItem[nCount].move = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //移動量
 
 		g_aItem[nCount].type = ITEMTYPE_00; //種類
@@ -208,66 +211,76 @@ void UpdateItem(void)
 //==================================
 void MoveItem(int nCount)
 {
+	if (GetStopTime()->bStopTime == false)
+	{ //時間停止中じゃない場合
 
 	//重力
 
-	g_aItem[nCount].move.y += 1;
+		g_aItem[nCount].move.y += 0.5f;
 
-	//前フレームの位置を保存
+		//前フレームの位置を保存
 
-	g_aItem[nCount].posOld = g_aItem[nCount].posOrigin;
+		g_aItem[nCount].posOld = g_aItem[nCount].posOrigin;
 
-	//位置の更新
+		//位置の更新
 
-	g_aItem[nCount].posOrigin.x += g_aItem[nCount].move.x;
+		g_aItem[nCount].posOrigin.x += g_aItem[nCount].move.x;
 
-	g_aItem[nCount].posOrigin.y += g_aItem[nCount].move.y;
+		g_aItem[nCount].posOrigin.y += g_aItem[nCount].move.y;
 
-	//ブロックとの当たり判定
+		//ブロックとの当たり判定
 
-	g_aItem[nCount].blanding = CollisionBlock(&g_aItem[nCount].posOrigin, &g_aItem[nCount].posOld, &g_aItem[nCount].move, ITEM_SIZE, ITEM_SIZE * 2);
+		g_aItem[nCount].blanding = CollisionBlock(&g_aItem[nCount].posOrigin, &g_aItem[nCount].posOld, &g_aItem[nCount].move, ITEM_SIZE, ITEM_SIZE * 2);
 
-	//足場の当たり判定
+		//足場の当たり判定
 
-	if (g_aItem[nCount].blanding == false)
-	{
-		g_aItem[nCount].blanding = CollisionScaffold(&g_aItem[nCount].posOrigin, &g_aItem[nCount].posOld, &g_aItem[nCount].move, ITEM_SIZE, ITEM_SIZE * 2, false);
-	}
-
-	//アイテムの浮遊
-
-	if (g_bItemPosUp == true)
-	{ //上昇
-
-		//カウンターをマイナス
-
-		g_ItemPosUpCounter -= 0.125;
-
-		//カウンターがゼロになったら
-
-		if (g_ItemPosUpCounter == 0)
+		if (g_aItem[nCount].blanding == false)
 		{
-			g_bItemPosUp = false;
+			g_aItem[nCount].blanding = CollisionScaffold(&g_aItem[nCount].posOrigin, &g_aItem[nCount].posOld, &g_aItem[nCount].move, ITEM_SIZE, ITEM_SIZE * 2, false);
 		}
-	}
-	else
-	{ //下降
 
-		//カウンターをプラス
+		//アイテムの浮遊
 
-		g_ItemPosUpCounter += 0.125;
+		if (g_bItemPosUp == true)
+		{ //上昇
 
-		//カウンターが浮遊間隔分たったら
+			//カウンターをマイナス
 
-		if (g_ItemPosUpCounter == 20)
-		{
-			g_bItemPosUp = true;
+			g_ItemPosUpCounter -= 0.125;
+
+			//カウンターがゼロになったら
+
+			if (g_ItemPosUpCounter == 0)
+			{
+				g_bItemPosUp = false;
+			}
 		}
+		else
+		{ //下降
+
+			//カウンターをプラス
+
+			g_ItemPosUpCounter += 0.125;
+
+			//カウンターが浮遊間隔分たったら
+
+			if (g_ItemPosUpCounter == 20)
+			{
+				g_bItemPosUp = true;
+			}
+		}
+
+		g_aItem[nCount].pos.x = g_aItem[nCount].posOrigin.x;
+
+		g_aItem[nCount].pos.y = g_aItem[nCount].posOrigin.y - 20 - g_ItemPosUpCounter;
 	}
 
-	g_aItem[nCount].pos.x = g_aItem[nCount].posOrigin.x;
+	//画面上のアイテムボックスの位置を計算
 
-	g_aItem[nCount].pos.y = g_aItem[nCount].posOrigin.y - 20 - g_ItemPosUpCounter;
+	g_aItem[nCount].ScreenPos.x = g_aItem[nCount].pos.x - GetPosCamera()->x;
+
+	g_aItem[nCount].ScreenPos.y = g_aItem[nCount].pos.y - GetPosCamera()->y;
+
 
 	VERTEX_2D* pVtx; //頂点情報へのポインタ
 
@@ -277,27 +290,27 @@ void MoveItem(int nCount)
 
 	pVtx += nCount * 4;
 
-	pVtx[0].pos.x = g_aItem[nCount].pos.x - ITEM_SIZE;
+	pVtx[0].pos.x = g_aItem[nCount].ScreenPos.x - ITEM_SIZE;
 
-	pVtx[0].pos.y = g_aItem[nCount].pos.y - ITEM_SIZE * 2;
+	pVtx[0].pos.y = g_aItem[nCount].ScreenPos.y - ITEM_SIZE * 2;
 
 	pVtx[0].pos.z = 0.0f;
 
-	pVtx[1].pos.x = g_aItem[nCount].pos.x + ITEM_SIZE;
+	pVtx[1].pos.x = g_aItem[nCount].ScreenPos.x + ITEM_SIZE;
 
-	pVtx[1].pos.y = g_aItem[nCount].pos.y - ITEM_SIZE * 2;
+	pVtx[1].pos.y = g_aItem[nCount].ScreenPos.y - ITEM_SIZE * 2;
 
 	pVtx[1].pos.z = 0.0f;
 
-	pVtx[2].pos.x = g_aItem[nCount].pos.x - ITEM_SIZE;
+	pVtx[2].pos.x = g_aItem[nCount].ScreenPos.x - ITEM_SIZE;
 
-	pVtx[2].pos.y = g_aItem[nCount].pos.y;
+	pVtx[2].pos.y = g_aItem[nCount].ScreenPos.y;
 
 	pVtx[2].pos.z = 0.0f;
 
-	pVtx[3].pos.x = g_aItem[nCount].pos.x + ITEM_SIZE;
+	pVtx[3].pos.x = g_aItem[nCount].ScreenPos.x + ITEM_SIZE;
 
-	pVtx[3].pos.y = g_aItem[nCount].pos.y;
+	pVtx[3].pos.y = g_aItem[nCount].ScreenPos.y;
 
 	pVtx[3].pos.z = 0.0f;
 
@@ -305,7 +318,13 @@ void MoveItem(int nCount)
 
 	g_pVtxBuffItem->Unlock();
 
-	g_aItem[nCount].move.x += (0.0f - g_aItem[nCount].move.x) * 0.1f;
+	if (GetStopTime()->bStopTime == false)
+	{ //時間停止中じゃない場合
+
+	//減速
+
+		g_aItem[nCount].move.x += (0.0f - g_aItem[nCount].move.x) * 0.1f;
+	}
 }
 
 //==================================
@@ -424,16 +443,16 @@ void HitItem(Item* pItem)
 
 		PlaySound(SOUND_LABEL_SE_CLOCK);
 
-		HitItem00(); //時計の処理
+		HitItemTimer(); //時計の処理
 		
 		break;
 	}
 }
 
 //==================================
-// アイテムのヒット処理(type00)
+// アイテムのヒット処理
 //==================================
-void HitItem00(void)
+void HitItemTimer(void)
 {
 	StopTime* pStopTime = GetStopTime(); //時間停止の情報のポインタを獲得
 

@@ -5,6 +5,7 @@
 // 
 //=============================
 #include "camera.h"
+
 #include "player.h"
 
 //グローバル変数
@@ -40,12 +41,6 @@ void UpdateCamera(void)
 
 		g_posCamera.x = 0;
 	}
-
-	if (g_posCamera.y < 0)
-	{ //カメラのｙ座標がゼロを下回った場合
-		g_posCamera.y = 0;
-	}
-
 }
 
 //獲得

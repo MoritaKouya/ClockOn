@@ -5,8 +5,6 @@
 // 
 //=============================
 
-#include "main.h"
-
 #include "block.h"
 
 #include "bullet.h"
@@ -17,6 +15,9 @@
 //#include "explosion.h"
 //
 #include "enemy.h"
+
+#include "itembox.h"
+
 //
 //#include "player.h"
 //
@@ -231,6 +232,8 @@ void UpdateBullet(void)
 
 					CollisionEnemy(&g_aBullet[nCntBullet]); //敵
 
+					CollisionItemBox(&g_aBullet[nCntBullet]); //アイテムボックス
+
 					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
 
 					//CollisionBoss(&g_aBullet[nCntBullet]); //ボス
@@ -282,6 +285,19 @@ void UpdateBullet(void)
 			pVtx[3].pos.y = g_aBullet[nCntBullet].ScreenPos.y + cosf(-g_aBullet[nCntBullet].fAngle + D3DX_PI * 0.25f) * BULLET_SIZE;
 
 			pVtx[3].pos.z = 0.0f;
+
+			if (GetStopTime()->bStopTime == false)
+			{ //時間停止中じゃない場合
+
+			    //球の寿命
+
+				g_aBullet[nCntBullet].nLife--; //寿命を減らす
+
+				if (g_aBullet[nCntBullet].nLife <= 0) //ゼロになった場合
+				{
+					g_aBullet[nCntBullet].bUse = false; //使用していない状態にする
+				}
+			}
 		}
 		
 	}
@@ -293,8 +309,6 @@ void UpdateBullet(void)
 //==============
 void MoveBullet(int nCnt)
 {
-
-
 	if (g_aBullet[nCnt].bUse == true)
 	{//球が使用されている場合
 
@@ -309,16 +323,6 @@ void MoveBullet(int nCnt)
 		g_aBullet[nCnt].ScreenPos.x += g_aBullet[nCnt].move.x;
 
 		g_aBullet[nCnt].ScreenPos.y += g_aBullet[nCnt].move.y;
-
-		if (g_aBullet[nCnt].ScreenPos.x < 0 || SCREEN_WIDTH < g_aBullet[nCnt].ScreenPos.x)
-		{ //球の位置が画面外に出た
-			g_aBullet[nCnt].bUse = false; //使用していない状態にする
-		}
-
-		if (g_aBullet[nCnt].ScreenPos.y < 0 || SCREEN_HEIGHT < g_aBullet[nCnt].ScreenPos.y)
-		{ //球の位置が画面外に出た
-			g_aBullet[nCnt].bUse = false; //使用していない状態にする
-		}
 
 		g_pVtxBuffBullet->Unlock();
 	}
@@ -467,6 +471,55 @@ void CollisionEnemy(Bullet* pBullet)
 	}
 }
 
+//====================================
+// アイテムボックスとの当たり判定
+//====================================
+void CollisionItemBox(Bullet* pBullet)
+{
+	int nCountItemBox;
+
+	//アイテムボックスの取得
+
+	ItemBox* pItemBox = GetItemBox(); //アイテムボックスの情報が代入される
+
+	for (nCountItemBox = 0; nCountItemBox < NUM_ITEMBOX; nCountItemBox++, pItemBox++)
+	{
+		if (pItemBox->bUse == true)
+		{//ブロックが使用されている
+
+			//カメラに写ったら
+
+			if (0 < pItemBox->ScreenPos.x && pItemBox->ScreenPos.x < SCREEN_WIDTH
+
+				&& 0 < pItemBox->ScreenPos.y && pItemBox->ScreenPos.y < SCREEN_HEIGHT)
+			{
+
+				//中心座標の距離（ｘ、ｙ）
+
+				float fDistance_x = pItemBox->pos.x - pBullet->pos.x, //距離ｘ
+
+					fDistance_y = pItemBox->pos.y - pBullet->pos.y; //距離y
+
+				//二つの中心中心座標の距離の2乗
+
+				float fDistanceSquared = (fDistance_x * fDistance_x) + (fDistance_y * fDistance_y);
+
+				//２つの円の半径の合計
+
+				float fTotalRadius = (ITEMBOX_SIZE + BULLET_SIZE); //半径の合計の長さ
+
+				if (fDistanceSquared <= fTotalRadius * fTotalRadius) //半径の合計の２乗より距離の２乗が小さい場合
+				{//敵とプレイヤーが当たった
+
+					HitItemBox(nCountItemBox); //アイテムボックスのヒット処理
+
+					pBullet->bUse = false; //球を使用していない状態にする
+				}
+			}
+		}
+	}
+}
+
 //==================
 // ブロックとの当たり判定
 //==================
@@ -491,10 +544,6 @@ void CollisionBlock(Bullet* pBullet)
 
 				&& pBullet->pos.y <= pBlock->pos.y + pBlock->fHeight) //ブロックと弾が当たった
 			{
-				//ヒット音
-
-				PlaySound(SOUND_LABEL_SE_HIT001);
-
 				pBullet->bUse = false; //球を使用していない状態にする
 
 				break;

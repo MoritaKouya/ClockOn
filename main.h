@@ -78,6 +78,4 @@ void SetMode(MODE mode); //モードの設定
 
 MODE GetMode(void); //モードの取得
 
-LPD3DXFONT GetFont();
-
 #endif

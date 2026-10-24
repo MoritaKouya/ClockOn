@@ -14,12 +14,17 @@
 #include "block.h"
 #include "camera.h"
 #include "chargeeffect.h"
+#include "effect.h"
 #include "enemy.h"
 #include "fade.h"
+#include "goal.h"
 #include "guide.h"
 #include "input.h"
 #include "item.h"
+#include "itembox.h"
+#include "laser.h"
 #include "scaffold.h"
+#include "sparkle.h"
 #include "stoptime.h"
 #include "stoptime_playereffect.h"
 #include "player.h"
@@ -44,23 +49,43 @@ typedef enum
 
 	OBJECTTYPE_4, //ガイド
 
+	OBJECTTYPE_5, //アイテムボックス
+
+	OBJECTTYPE_6, //レーザー
+
 	OBJECTTYPE_MAX
 }OBJECTTYPE;
 
 //グローバル変数
-
-
 
 const char* g_aStageFile_Path[NUM_MAP] =
 {
 	"Data/SAVEDATA/STAGE/stage000.csv"
 }; //ステージのファイルの相対パス
 
+LPD3DXFONT g_FontTutrial;
+
 //==================================
 //ゲーム画面の初期化処理 
 //==================================
 void InitGame(void)
 {
+	D3DXVECTOR3 posPlayer; //プレイヤーの初期位置を代入
+
+	//デバッグ表示用フォントを生成
+
+	//デバイスの取得
+
+	LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
+
+	pDevice = GetDevice();
+
+	D3DXCreateFont(pDevice, 18, 0, FW_HEAVY, 0, FALSE, SHIFTJIS_CHARSET,
+
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
+
+		"ＭＳ ゴシック", &g_FontTutrial);
+
 	//+----------------------------
 	//|各オブジェクトの初期化処理
 	//+----------------------------
@@ -72,12 +97,6 @@ void InitGame(void)
 	//時間停止
 
 	InitStopTime();
-
-	//プレイヤー
-
-	InitPlayer(); //プレイヤー
-
-	InitCamera(); //カメラ
 
 	InitStoptimePlayerEffect(); //時間停止のエフェクト
 
@@ -105,23 +124,61 @@ void InitGame(void)
 
 	InitGuide();
 
+	//アイテム
+
+	InitItem(); //アイテム
+
+	InitItemBox(); //アイテムボックス
+
+	//ゴール
+
+	InitGoal();
+
+	//レーザー
+
+	InitLaser();
+
 	//チャージエフェクト
 
 	InitChargeEffect();
 
+	//キラキラ
+
+	InitSparkle();
+
+	//エフェクト
+
+	InitEffect();
+
 	//ステージの読み込み
 
-	LoadStage();
+	posPlayer = LoadStage();
+
+	//プレイヤー
+
+	InitPlayer(posPlayer); //プレイヤー
+
+	InitCamera(); //カメラ
 }
 
 //=============================
 // ステージのロード処理
 //=============================
-void LoadStage()
+D3DXVECTOR3 LoadStage(void)
 {
-	FILE* pFile;
+	FILE* pFile; //ファイルポインタ
 
-	int nCountX,nCountY,nMax_X, nMax_Y, nScan = 0;
+	int nCountX, //X座標のカウント
+
+		nCountY, //Y座標のカウント
+
+		nMax_X, //X座標の最大数
+
+		nMax_Y, //Y座標の最大数
+
+		nScan = 0; //読み込んだ値を代入する変数
+
+	D3DXVECTOR3 posPlayer; //プレイヤーの位置
 
 	pFile = fopen(g_aStageFile_Path[0], "r");
 
@@ -141,13 +198,27 @@ void LoadStage()
 
 				(void)fscanf(pFile, "%d%*[,]", &nScan);
 
-				switch (nScan /10) //数値 / 10の値がオブジェクトのタイプ、余りの値がオブジェクトの種類
+				switch (nScan / 10) //数値 / 10の値がオブジェクトのタイプ、余りの値がオブジェクトの種類
 				{
 				case OBJECTTYPE_0: //タイプ０の場合
 
-					break; //空白
+					if (nScan == 1)
+					{
+						//プレイヤーの位置を設定
+
+						posPlayer = D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f);
+
+					}
+					else if (nScan == 2)
+					{
+						SetGoal(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, GOAL_SIZE / 2 + (CELL_SIZE * 2) * (float)nCountY, 0.0f));
+					}
+
+					break;
 
 				case OBJECTTYPE_1: //タイプ１の場合
+
+					//ブロック
 
 					SetBlock(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f));
 
@@ -155,19 +226,41 @@ void LoadStage()
 
 				case OBJECTTYPE_2: //タイプ２の場合
 
+					//足場
+
 					SetScaffold(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY, 0.0f));
-				
+
 					break;
 
 				case OBJECTTYPE_3: //タイプ３の場合
 
+					//敵
+
 					SetEnemy(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f), (ENEMYTYPE)(nScan % 10));
-				
+
 					break;
 
-				case OBJECTTYPE_4:
+				case OBJECTTYPE_4: //タイプ４の場合
 
-					SetGuide(D3DXVECTOR3((CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), nScan % 10);
+					//ガイド
+
+					SetGuide(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), nScan % 10);
+
+					break;
+
+				case OBJECTTYPE_5: //タイプ５の場合
+
+					//アイテムボックス
+
+					SetItemBox(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), (ITEMTYPE)(nScan % 10));
+
+					break;
+
+				case OBJECTTYPE_6:
+
+					//レーザー
+
+					SetLaser(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY, 0.0f), (LASERTYPE)(nScan % 10));
 
 					break;
 				}
@@ -176,6 +269,9 @@ void LoadStage()
 
 		fclose(pFile); //ファイルを閉じる
 	}
+
+	return posPlayer;
+
 }
 
 //==================================
@@ -223,6 +319,28 @@ void UninitGame(void)
 
 	UninitGuide();
 
+	//アイテム
+
+	UninitItem(); //アイテム
+
+	UninitItemBox(); //アイテムボックス
+
+	//ゴール
+
+	UninitGoal();
+
+	//レーザー
+
+	UninitLaser();
+
+	//キラキラ
+
+	UninitSparkle();
+
+	//エフェクト
+
+	UninitEffect();
+
 	//チャージエフェクト
 
 	UninitChargeEffect();
@@ -230,6 +348,8 @@ void UninitGame(void)
 	//アイテム
 
 	UninitItem();
+
+	UninitItemBox();
 
 	//背景
 
@@ -273,36 +393,54 @@ void UpdateGame(void)
 
 	UpdateBlock();
 
-	//時間停止で止まるもの
+	//足場
 
-	
+	UpdateScaffold();
 
-	  //足場
+	//球
 
-		UpdateScaffold();
+	UpdateBullet();
 
-		//球
+	//敵
 
-		UpdateBullet();
+	UpdateEnemy();
 
-		//敵
+	//ガイド
 
-		UpdateEnemy();
+	UpdateGuide();
 
-		//ガイド
+	//アイテム
 
-		UpdateGuide();
+	UpdateItem(); //アイテム
 
-		if (GetStopTime()->bStopTime == false)
-		{ //時間停止中じゃない場合
+	UpdateItemBox(); //アイテムボックス
 
-		//チャージエフェクト
+	//ゴール
+
+	UpdateGoal();
+
+	//レーザー
+
+	UpdateLaser();
+
+	//キラキラ
+
+	UpdateSparkle();
+
+	//エフェクト
+
+	UpdateEffect();
+
+	//エフェクト
+
+	UpdateEffect();
+
+	if (GetStopTime()->bStopTime == false)
+	{ //時間停止中じゃない場合
+
+	//チャージエフェクト
 
 		UpdateChargeEffect();
-
-		//アイテム
-
-		UpdateItem();
 	}
 
 	//背景
@@ -331,6 +469,10 @@ void DrawGame(void)
 
 	DrawScaffold();
 
+	//ゴール
+
+	DrawGoal();
+
 	//ガイド
 
 	DrawGuide();
@@ -339,6 +481,12 @@ void DrawGame(void)
 
 	DrawItem();
 
+	DrawItemBox(); //アイテムボックス
+
+	//キラキラ
+
+	DrawSparkle();
+
 	//時計
 
 	DrawStopTime();
@@ -346,6 +494,10 @@ void DrawGame(void)
 	//チャージエフェクト
 
 	DrawChargeEffect();
+
+	//レーザー
+
+	DrawLaser();
 
 	//敵
 
@@ -359,7 +511,11 @@ void DrawGame(void)
 
 	//球
 
-	DrawBullet();	
+	DrawBullet();
+
+	//エフェクト
+
+	DrawEffect();
 
 	//操作方法
 
@@ -375,7 +531,7 @@ void DrawGame(void)
 //==========================
 void DrawHowToUse(void)
 {
-	RECT rect = { 0, 580,SCREEN_WIDTH,SCREEN_HEIGHT };
+	RECT rect = { 920, 0,SCREEN_WIDTH,SCREEN_HEIGHT };
 
 	char aStr[256];
 
@@ -385,7 +541,5 @@ void DrawHowToUse(void)
 
 	//テキストの描画
 
-	LPD3DXFONT font = GetFont();
-
-	font->DrawText(NULL, &aStr[0], -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 255, 255, 255));
+	g_FontTutrial->DrawText(NULL, &aStr[0], -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 255, 0, 255));
 }

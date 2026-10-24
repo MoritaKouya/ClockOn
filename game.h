@@ -15,7 +15,7 @@
 
 void InitGame(void);
 
-void LoadStage(void);
+D3DXVECTOR3 LoadStage(void);
 
 //èIóπ
 

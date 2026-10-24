@@ -47,7 +47,7 @@ void InitStoptimePlayerEffect(void)
 
 		&g_pTextureStoptimePlayerEffect);
 
-	g_StoptimePlayerEffect.pos = D3DXVECTOR3(110.0f, 110.0f, 0.0f); //ˆÊ’u‚ð‰Šú‰»
+	g_StoptimePlayerEffect.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //ˆÊ’u‚ð‰Šú‰»
 
 	g_StoptimePlayerEffect.fSize = 0.0f;
 
@@ -263,7 +263,7 @@ void SetStoptimePlayerEffect(void)
 
 	Player* pPlayer = GetPlayer();
 
-	g_StoptimePlayerEffect.pos = pPlayer->pos;
+	g_StoptimePlayerEffect.pos = pPlayer->ScreenPos;
 
 	g_StoptimePlayerEffect.pos.y -= PLAYER_SIZE;
 
