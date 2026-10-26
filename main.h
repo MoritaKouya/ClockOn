@@ -63,6 +63,8 @@ typedef enum
 {
 	MODE_TITLE = 0, //タイトル
 
+	MODE_SELECTSTAGE,
+
 	MODE_GAME, //ゲーム
 
 	MODE_RESULT, //リザルト

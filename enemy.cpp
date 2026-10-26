@@ -295,17 +295,6 @@ void UpdateEnemy(void)
 				if (GetStopTime()->bStopTime == false)
 				{ //時間停止中じゃない場合
 
-					Player* pPlayer = GetPlayer();
-
-					if (pPlayer->pos.x < g_aEnemy[nCntEnemy].pos.x)
-					{
-						g_aEnemy[nCntEnemy].bRightMove = false;
-					}
-					else
-					{
-						g_aEnemy[nCntEnemy].bRightMove = true;
-					}
-
 					StateEnemy(nCntEnemy); //状態
 
 					//プレイヤーに近づいたら
@@ -314,6 +303,25 @@ void UpdateEnemy(void)
 
 						&& -SCREEN_WIDTH < g_aEnemy[nCntEnemy].ScreenPos.y && g_aEnemy[nCntEnemy].ScreenPos.y < SCREEN_HEIGHT * 2)
 					{
+						Player* pPlayer = GetPlayer();
+
+						float distanceX = pPlayer->pos.x - g_aEnemy[nCntEnemy].pos.x;
+
+						float threshold = 80.0f; // 向きを変えない距離の閾値（ドット数や座標系に合わせて調整）
+
+						// 閾値より離れているときだけ向きを更新する
+						if (distanceX * distanceX > threshold * threshold)
+						{
+
+							if (pPlayer->pos.x < g_aEnemy[nCntEnemy].pos.x)
+							{
+								g_aEnemy[nCntEnemy].bRightMove = false;
+							}
+							else
+							{
+								g_aEnemy[nCntEnemy].bRightMove = true;
+							}
+						}
 
 						ActionEnemy(nCntEnemy); //行動
 
@@ -494,6 +502,18 @@ void ActionType1(int nCnt)
 		g_aEnemy[nCnt].nCounterAction = 0;
 	}
 
+	//かくかくしないようにする
+
+	float distanceX = pPlayer->pos.x - g_aEnemy[nCnt].pos.x;
+
+	float threshold = 80.0f; // 位置を変えない距離
+
+	// プレイヤーと敵の距離が向きを変えない距離より離れている場合
+	if (fabsf(distanceX) < threshold)
+	{
+		g_aEnemy[nCnt].move.x = 0;
+	}
+
 	//移動処理
 
 	MoveEnemy(nCnt);
@@ -522,6 +542,8 @@ void MoveEnemy(int nCnt)
 	g_aEnemy[nCnt].ScreenPos.x += g_aEnemy[nCnt].move.x;
 
 	g_aEnemy[nCnt].ScreenPos.y += g_aEnemy[nCnt].move.y;
+
+
 
 	g_aEnemy[nCnt].bJump = CollisionBlock(&g_aEnemy[nCnt].pos, &g_aEnemy[nCnt].posOld, &g_aEnemy[nCnt].move,
 		PLAYER_SIZE, PLAYER_SIZE * 2); //着地時だけジャンプが可能

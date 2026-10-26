@@ -6,6 +6,8 @@
 //=============================
 #include "fade.h"
 
+#include "sound.h"
+
 //グローバル変数
 
 LPDIRECT3DVERTEXBUFFER9 g_pVtxBuffFade = NULL; //頂点バッファのポインタ
@@ -185,6 +187,8 @@ void DrawFade(void)
 //フェードの設定
 void SetFade(MODE modeNext)
 {
+	StopSound(SOUND_LABEL_CLOCK); //時間停止のbgmを停止
+
 	g_fade = FADE_OUT; //フェードアウト状態に
 
 	g_modeNext = modeNext;

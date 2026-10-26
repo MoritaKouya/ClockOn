@@ -7,6 +7,7 @@
 #include "main.h"
 #include "input.h"
 #include "title.h"
+#include "selectstage.h"
 #include "game.h"
 #include "result.h"
 #include "fade.h"
@@ -529,6 +530,12 @@ void Update(void)
 
 		break;
 
+	case MODE_SELECTSTAGE:
+
+		UpdateSelectStage();
+
+		break;
+
 	case MODE_GAME:
 
 		UpdateGame();
@@ -574,6 +581,12 @@ void Draw(void)
 		case MODE_TITLE:
 
 			DrawTitle();
+
+			break;
+
+		case MODE_SELECTSTAGE:
+
+			DrawSelectStage();
 
 			break;
 
@@ -635,6 +648,12 @@ void SetMode(MODE mode)
 
 		break;
 
+	case MODE_SELECTSTAGE:
+
+		UninitSelectStage();
+
+		break;
+
 	case MODE_GAME:
 
 		UninitGame(); //ゲーム画面
@@ -648,13 +667,21 @@ void SetMode(MODE mode)
 		break;
 	}
 
+	g_mode = mode; //モードを保存する
+
 	//新しいモードの初期化処理
 
-	switch (mode)
+	switch (g_mode)
 	{
 	case MODE_TITLE:
 
 		InitTitle(); //タイトル画面
+
+		break;
+
+	case MODE_SELECTSTAGE:
+
+		InitSelectStage();
 
 		break;
 
@@ -670,8 +697,6 @@ void SetMode(MODE mode)
 
 		break;
 	}
-
-	g_mode = mode; //モードを保存する
 }
 
 //==========================

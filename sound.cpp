@@ -39,14 +39,24 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 
 	//時計
 
-	{"data/BGM/clock000.wav", -1},		// BGM0
-	
+	{"data/BGM/clock000.wav", -1},		// 時計のサウンド
+	{"data/SE/clocksound.wav", 0},      // 時計のSE
+
 	//SE
 
 	{"data/SE/shot000.wav", 0},			// 弾発射音
 	{"data/SE/hit000.wav", 0},			// 被弾音
 	{"data/SE/hit001.wav", 0},			// 被弾音
-	{"data/SE/clocksound.wav", 0},      // 時計のサウンド
+
+	//プレイヤー
+
+	{"data/SE/dash.wav", 0},            // ダッシュ
+	{"data/SE/avoidance.wav", 0},       // 回避
+	{"data/SE/jump.wav", 0},
+
+	//アイテムボックス
+
+	{"data/SE/itembox.wav", 0},
 };
 
 //=============================================================================

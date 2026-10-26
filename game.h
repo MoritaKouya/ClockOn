@@ -9,6 +9,10 @@
 
 #include "main.h"
 
+//マクロ定義
+
+#define CELL_SIZE (20) //マスの半径
+
 //プロトタイプ宣言
 
 //初期化
@@ -30,5 +34,9 @@ void UpdateGame(void);
 void DrawGame(void); 
 
 void DrawHowToUse(void); //プレイ方法
+
+//獲得
+
+float GetStageWidth(void);
 
 #endif 

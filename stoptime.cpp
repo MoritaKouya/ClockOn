@@ -11,6 +11,7 @@
 #include "input.h"
 #include "sound.h"
 #include "stoptime_playereffect.h"
+#include "stoptimecounter.h"
 
 //マクロ定義
 
@@ -41,6 +42,8 @@ void InitStopTime(void)
 
 	//各オブジェクトの初期化処理
 
+	InitStopTimeCounter(); //時間停止カウンター
+
 	InitClock(); //時計
 
 	InitClockHands(); //時計の針
@@ -53,6 +56,8 @@ void InitStopTime(void)
 void UninitStopTime(void)
 {
 	//各オブジェクトの初期化処理
+
+	UninitStopTimeCounter(); //時間停止カウンター
 
 	UninitClock(); //時計
 
@@ -79,7 +84,7 @@ void UpdateStopTime(void)
 
 		if (g_StopTime.nCounterStopTime == 0)
 		{ //カウンターがゼロになった場合
-			
+
 		  //時間停止を終了する
 
 			g_StopTime.bStopTime = false; //時間停止していない状態にする
@@ -87,6 +92,13 @@ void UpdateStopTime(void)
 			g_StopTime.bStopTimeFlag = false; //時間停止できないようにする
 
 			StopSound(SOUND_LABEL_CLOCK); //サウンド
+		}
+		else if (g_StopTime.nCounterStopTime % 60 == 0)
+		{ //カウンターが60で割れる場合
+
+			//カウンターを画面に表示する
+
+			SetStopTimeCounter(g_StopTime.nCounterStopTime / 60);
 		}
 	}
 	else
@@ -104,7 +116,7 @@ void UpdateStopTime(void)
 
 				g_StopTime.nCounterStopTime++; //カウンターを増やす
 
-				if(g_StopTime.nCounterStopTime % 60 == 0)
+				if (g_StopTime.nCounterStopTime % 60 == 0)
 				{
 					PlaySound(SOUND_LABEL_SE_CLOCK);
 				}
@@ -117,13 +129,13 @@ void UpdateStopTime(void)
 			}
 		}
 	}
+	//各オブジェクトの更新処理
 
-		//各オブジェクトの更新処理
+	UpdateStopTimeCounter(); //時間停止カウンター
 
-		UpdateClock(); //時計
+	UpdateClock(); //時計
 
-		UpdateClockHands(); //時計の針
-	
+	UpdateClockHands(); //時計の針
 }
 
 //==================================
@@ -167,12 +179,14 @@ void SwitchStopTime(void)
 //時間停止の描画処理 
 //==================================
 void DrawStopTime(void)
-{	
-		//各オブジェクトの初期化処理
+{
+	//各オブジェクトの初期化処理
 
-		DrawClock(); //時計
+	DrawStopTimeCounter(); //時間停止カウンター
 
-		DrawClockHands(); //時計の針	
+	DrawClock(); //時計
+
+	DrawClockHands(); //時計の針
 }
 
 //==================================

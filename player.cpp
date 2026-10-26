@@ -15,7 +15,9 @@
 #include "aim.h"
 #include "block.h"
 #include "laser.h"
+#include "playereffect.h"
 #include "scaffold.h"
+#include "screeneffect.h"
 #include "sound.h"
 
 //#include "hpber.h"
@@ -237,12 +239,6 @@ void UninitPlayer(void)
 //==================================
 void UpdatePlayer(void)
 {
-	//スクリーン上のプレイヤーの位置を計算
-
-	g_player.ScreenPos.x = g_player.pos.x - GetPosCamera()->x;
-
-	g_player.ScreenPos.y = g_player.pos.y - GetPosCamera()->y;
-
 	//移動
 
 	MovePlayer();
@@ -251,23 +247,26 @@ void UpdatePlayer(void)
 
 	//RotatePlayer();
 
-	//状態
+	if (GetMode() == MODE_GAME)
+	{
+		//状態
 
-	StatePlayer();
+		StatePlayer();
 
-	//標準との角度を求める
+		//標準との角度を求める
 
-	D3DXVECTOR3 posAim = GetPosAim();
+		D3DXVECTOR3 posAim = GetPosAim();
 
-	float AngleAim = CalcAngle(posAim);
+		float AngleAim = CalcAngle(posAim);
 
-	//球の発射処理
+		//球の発射処理
 
-	ShootBallet(AngleAim);
+		ShootBallet(AngleAim);
 
-	//アイテムの当たり判定
+		//アイテムの当たり判定
 
-	CollisionItem();
+		CollisionItem();
+	}
 
 	//アニメーション
 
@@ -281,10 +280,25 @@ void UpdatePlayer(void)
 
 	//プレイヤーのエフェクト
 
-	if (1 < g_player.move.x || g_player.move.x < 0)
+	if (g_player.bJump == true)
 	{
-		SetEffect(g_player.pos, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f);
+		if (1 < g_player.move.x)
+		{ //右向きの移動エフェクト
+
+			SetEffect(D3DXVECTOR3(g_player.pos.x + PLAYER_SIZE, g_player.pos.y, 0.0f),D3DXVECTOR3(0.0f,0.0f,0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+
+		}
+		else if (g_player.move.x < -1)
+		{ //左向きの移動エフェクト
+
+			SetEffect(D3DXVECTOR3(g_player.pos.x - PLAYER_SIZE, g_player.pos.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+
+		}
 	}
+
+	//プレイヤーのエフェクト
+
+	SetPlayerEffect(g_player.pos, PLAYER_SIZE + 20.0f, 15);
 }
 //=========================
 // プレイヤーの移動処理
@@ -323,31 +337,71 @@ void MovePlayer(void)
 
 	}
 
-	//重力
-
-	g_player.move.y += 2;
-
-	//ジャンプ
-
-	if (GetKeyboardTrigger(DIK_SPACE) && g_player.bJump == true || GetJoypadTrigger(JOYKEY_B) && g_player.bJump == true)
+	if (GetMode() == MODE_GAME)
 	{
-		g_player.move.y = -30; //ジャンプの大きさ
+		//重力
 
-		g_player.bJump = false;
-	}
-	
-	//ダッシュ
+		g_player.move.y += 2;
 
-	g_player.nDashCounter--;
+		//ダッシュ
 
-	if (g_player.nDashCounter <= 0)
-	{
+		g_player.nDashCounter--;
 
-		if (GetJoypadTrigger(JOYKEY_A) == true || GetMouseTrigger(MOUSEBOTTOM_RIGHT))
+		if (g_player.nDashCounter <= 0)
+		{ //ダッシュカウンターがゼロの場合
+
+			if (GetJoypadTrigger(JOYKEY_A) == true || GetMouseTrigger(MOUSEBOTTOM_RIGHT))
+			{ //ダッシュボタンが押された場合
+
+				PlaySound(SOUND_LABEL_SE_DASH);
+
+				if (1 < g_player.move.x)
+				{ //右向きの移動量の増加
+					g_player.move.x = 32; //移動量の増加
+				}
+				else if (g_player.move.x < -1)
+				{ //左向きの移動量の増加
+					g_player.move.x = -32; //移動量の増加
+				}
+				else //移動量がゼロの場合
+				{
+					if (g_player.bRightAim == true)
+					{ //右向きの移動量の増加
+
+						g_player.move.x = 32; //移動量の増加
+					}
+					else
+					{//左向きの移動量の増加
+
+						g_player.move.x = -32; //移動量の増加
+					}
+				}
+
+				//ダッシュカウンターを設定
+
+				g_player.nDashCounter = 60;
+
+				//ダッシュ状態にする
+
+				g_player.bDash = true;
+			}
+		}
+		else if (g_player.nDashCounter <= 20)
+		{ //ダッシュ状態ではなくする
+			g_player.bDash = false;
+		}
+
+		//ジャンプ
+
+		if (GetKeyboardTrigger(DIK_SPACE) && g_player.bJump == true || GetJoypadTrigger(JOYKEY_B) && g_player.bJump == true)
 		{
-			g_player.move.x *= 2.5f; //ジャンプの大きさ
+			PlaySound(SOUND_LABEL_SE_JUMP);
 
-			g_player.nDashCounter = 30;
+			g_player.move.y = -30; //ジャンプの大きさ
+
+			g_player.move.x *= 0.7f; //ジャンプ中の減速処理
+
+			g_player.bJump = false;
 		}
 	}
 }
@@ -483,20 +537,26 @@ void UpdatepVtx()
 
 	g_player.pos.y += g_player.move.y;
 
-	g_player.ScreenPos.x += g_player.move.x;
+	//スクリーン上のプレイヤーの位置を計算
 
-	g_player.ScreenPos.y += g_player.move.y;
+	g_player.ScreenPos.x = g_player.pos.x - GetPosCamera()->x;
+
+	g_player.ScreenPos.y = g_player.pos.y - GetPosCamera()->y;
 
 	//ブロックとの当たり判定
 
 	g_player.bJump = CollisionBlock(&g_player.pos, &g_player.posOld, &g_player.move,
 		g_player.fWidth, g_player.fHeight); //着地時だけジャンプが可能
 
+	//足場の当たり判定
+
 	if (g_player.bJump == false)
 	{
 		g_player.bJump = CollisionScaffold(&g_player.pos, &g_player.posOld, &g_player.move,
 			g_player.fWidth, g_player.fHeight, true); //着地時だけジャンプが可能
 	}
+
+	//レーザーの当たり判定
 
 	CollisionLaser(&g_player.pos, &g_player.posOld, &g_player.move,
 		g_player.fWidth, g_player.fHeight); //着地時だけジャンプが可能
@@ -620,46 +680,73 @@ void HitPlayer(HIT hit, int amount)
 
 	case HIT_ENEMY: //敵の場合
 
-		if (g_player.nCounterState == 0)
+		//ダッシュしているか
+
+		if (g_player.bDash == true)
 		{
-			////ダメージスクリーン
+			//ダッシュスクリーン
 
-			//SetDamageScreen();
+			if (UseScreenEffect() == false)
+			{ //スクリーンエフェクトを使用していない場合
 
-			//プレイヤーのライフを減らす
+				//回避音
 
-			g_player.nLife--;
+				PlaySound(SOUND_LABEL_SE_AVOIDANCE);
 
-			//HPバーを減らす
+				//スクリーンエフェクト
 
-		/*	ModifyHpBer(g_player.nLife);*/
-
-			if (g_player.nLife <= 0) //プレイヤーの体力がなくなった
-			{
-				if (GetFade() == FADE_NONE)
-				{
-
-					//リザルト画面
-
-					SetFade(MODE_RESULT);
-				}
-			}
-			else
-			{
-				//カウンターを設定
-
-				g_player.nCounterState = 75;
-
-				g_player.state = PLAYERSTATE_DAMAGE;
-
-				g_player.col = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
+				SetScreenEffect(D3DXCOLOR(0.0f, 1.0f, 1.0f, 0.5f));
 			}
 		}
+		else
+		{
 
-		break;
+			if (g_player.nCounterState == 0)
+			{
+				//ダメージスクリーン
 
+				if (UseScreenEffect() == false)
+				{ //スクリーンエフェクトを使用していない場合
+
+					SetScreenEffect(D3DXCOLOR(1.0f, 0.0f, 0.0f, 0.5f));
+				}
+
+				//プレイヤーのライフを減らす
+
+				g_player.nLife--;
+
+				//HPバーを減らす
+
+			/*	ModifyHpBer(g_player.nLife);*/
+
+				if (g_player.nLife <= 0) //プレイヤーの体力がなくなった
+				{
+					//フェードしていない場合
+
+					if (GetFade() == FADE_NONE)
+					{
+
+						//リザルト画面
+
+						SetFade(MODE_RESULT);
+					}
+				}
+				else
+				{
+					//カウンターを設定
+
+					g_player.nCounterState = 75;
+
+					g_player.state = PLAYERSTATE_DAMAGE;
+
+					g_player.col = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
+				}
+			}
+
+			break;
+
+		}
 	}
-
 }
 
 void CollisionItem(void)

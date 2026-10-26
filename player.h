@@ -71,8 +71,9 @@ typedef struct
 
 	bool bJump; //ジャンプしているかどうか
 
-	bool bRightAim; //向き(true;右向きfalse;左向き)
+	bool bDash; //ダッシュしているかどうか
 
+	bool bRightAim; //向き(true;右向きfalse;左向き)
 
 	//ステータス
 

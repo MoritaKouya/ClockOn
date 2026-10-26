@@ -24,14 +24,14 @@
 #include "itembox.h"
 #include "laser.h"
 #include "scaffold.h"
+#include "screeneffect.h"
 #include "sparkle.h"
 #include "stoptime.h"
 #include "stoptime_playereffect.h"
 #include "player.h"
+#include "playereffect.h"
 
 //マクロ定義
-
-#define CELL_SIZE (20) //マスの半径
 
 #define NUM_MAP (1) //マップのタイプ
 
@@ -64,6 +64,8 @@ const char* g_aStageFile_Path[NUM_MAP] =
 }; //ステージのファイルの相対パス
 
 LPD3DXFONT g_FontTutrial;
+
+float g_StageWidth; //ステージの幅
 
 //==================================
 //ゲーム画面の初期化処理 
@@ -150,6 +152,8 @@ void InitGame(void)
 
 	InitEffect();
 
+	InitScreenEffect(); //画面の演出
+
 	//ステージの読み込み
 
 	posPlayer = LoadStage();
@@ -157,6 +161,8 @@ void InitGame(void)
 	//プレイヤー
 
 	InitPlayer(posPlayer); //プレイヤー
+
+	InitPlayerEffect(); //プレイヤーのエフェクト
 
 	InitCamera(); //カメラ
 }
@@ -172,8 +178,6 @@ D3DXVECTOR3 LoadStage(void)
 
 		nCountY, //Y座標のカウント
 
-		nMax_X, //X座標の最大数
-
 		nMax_Y, //Y座標の最大数
 
 		nScan = 0; //読み込んだ値を代入する変数
@@ -186,14 +190,14 @@ D3DXVECTOR3 LoadStage(void)
 	{
 		//最大数の代入
 
-		(void)fscanf(pFile, "%d%*[,]", &nMax_X); //X座標
+		(void)fscanf(pFile, "%f%*[,]", &g_StageWidth); //X座標
 
 		(void)fscanf(pFile, "%d%*[,]", &nMax_Y); //Y座標
 
 		for (nCountY = 0; nCountY < nMax_Y; nCountY++)
 		{ //Y座標の最大数分繰り返す
 
-			for (nCountX = 0; nCountX < nMax_X; nCountX++)
+			for (nCountX = 0; nCountX < g_StageWidth; nCountX++)
 			{ //X座標の最大数分繰り返す
 
 				(void)fscanf(pFile, "%d%*[,]", &nScan);
@@ -206,7 +210,7 @@ D3DXVECTOR3 LoadStage(void)
 					{
 						//プレイヤーの位置を設定
 
-						posPlayer = D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f);
+						posPlayer = D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE  + (CELL_SIZE * 2) * (float)nCountY, 0.0f);
 
 					}
 					else if (nScan == 2)
@@ -228,7 +232,7 @@ D3DXVECTOR3 LoadStage(void)
 
 					//足場
 
-					SetScaffold(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY, 0.0f));
+					SetScaffold(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f));
 
 					break;
 
@@ -236,7 +240,7 @@ D3DXVECTOR3 LoadStage(void)
 
 					//敵
 
-					SetEnemy(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, CELL_SIZE + (CELL_SIZE * 2) * (float)nCountY, 0.0f), (ENEMYTYPE)(nScan % 10));
+					SetEnemy(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) + (CELL_SIZE * 2) * (float)nCountY, 0.0f), (ENEMYTYPE)(nScan % 10));
 
 					break;
 
@@ -244,7 +248,7 @@ D3DXVECTOR3 LoadStage(void)
 
 					//ガイド
 
-					SetGuide(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) * (float)nCountY + CELL_SIZE, 0.0f), nScan % 10);
+					SetGuide(D3DXVECTOR3(CELL_SIZE + (CELL_SIZE * 2) * (float)nCountX, (CELL_SIZE * 2) + (CELL_SIZE * 2) * (float)nCountY, 0.0f));
 
 					break;
 
@@ -288,6 +292,8 @@ void UninitGame(void)
 	UninitStopTime();
 
 	//プレイヤー
+
+	UninitPlayerEffect(); //プレイヤーのエフェクト
 
 	UninitPlayer();
 
@@ -341,6 +347,8 @@ void UninitGame(void)
 
 	UninitEffect();
 
+	UninitScreenEffect(); //画面の演出
+
 	//チャージエフェクト
 
 	UninitChargeEffect();
@@ -378,6 +386,8 @@ void UpdateGame(void)
 	UpdateCamera(); //カメラ
 
 	UpdatePlayer(); //プレイヤー
+
+	UpdatePlayerEffect(); //プレイヤーのエフェクト
 
 	//時間停止
 
@@ -431,9 +441,7 @@ void UpdateGame(void)
 
 	UpdateEffect();
 
-	//エフェクト
-
-	UpdateEffect();
+	UpdateScreenEffect(); //画面の演出
 
 	if (GetStopTime()->bStopTime == false)
 	{ //時間停止中じゃない場合
@@ -487,10 +495,6 @@ void DrawGame(void)
 
 	DrawSparkle();
 
-	//時計
-
-	DrawStopTime();
-
 	//チャージエフェクト
 
 	DrawChargeEffect();
@@ -499,11 +503,17 @@ void DrawGame(void)
 
 	DrawLaser();
 
+	//時計
+
+	DrawStopTime();
+
 	//敵
 
 	DrawEnemy();
 
 	//プレイヤー
+
+	DrawPlayerEffect(); //プレイヤーのエフェクト
 
 	DrawPlayer(); //プレイヤー
 
@@ -516,6 +526,8 @@ void DrawGame(void)
 	//エフェクト
 
 	DrawEffect();
+
+	DrawScreenEffect(); //画面の演出
 
 	//操作方法
 
@@ -537,9 +549,17 @@ void DrawHowToUse(void)
 
 	//文字列に代入
 
-	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n移動：WASD / Lスティックor十字キー\n照準操作：マウス移動 / Rスティック\n銃：左クリック / RTボタン\nタイムストップ：SHIFTキー / LTボタン\nダッシュ：右クリック / Aボタン\nジャンプ：SPACEキー / Bボタン\n");
+	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n""移動：WASD / Lスティックor十字キー\n""照準操作：マウス移動 / Rスティック\n""銃：左クリック / RTボタン\n""タイムストップ：SHIFTキー / LTボタン\n""ダッシュ：右クリック / Aボタン\n""ジャンプ：SPACEキー / Bボタン\n");
 
 	//テキストの描画
 
 	g_FontTutrial->DrawText(NULL, &aStr[0], -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 255, 0, 255));
+}
+
+//==========================
+//ステージの幅の獲得処理
+//==========================
+float GetStageWidth(void)
+{
+	return g_StageWidth;
 }
