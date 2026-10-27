@@ -55,6 +55,8 @@ void InitStopTime(void)
 //==================================
 void UninitStopTime(void)
 {
+	g_StopTime.bStopTime = false; //時間停止していない状態にする
+
 	//各オブジェクトの初期化処理
 
 	UninitStopTimeCounter(); //時間停止カウンター

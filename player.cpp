@@ -528,11 +528,9 @@ void StatePlayer(void)
 		}
 		else
 		{
-
 			//’¸“_ƒJƒ‰[‚Ìİ’è
 
 			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.0f);
-
 		}
 
 		break;

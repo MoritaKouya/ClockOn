@@ -8,6 +8,7 @@
 
 #include "block.h"
 #include "camera.h"
+#include "combo.h"
 #include "enemyweapon.h"
 #include "item.h"
 #include "player.h"
@@ -44,6 +45,8 @@ int g_nNumEnemy; //敵の数を代入する変数,
 const char* g_aEnemyTexture_Path[ENEMYTYPE_MAX] =
 {
 	"Data/TEXTURE/ENEMY/enemy000.png",
+
+	"Data/TEXTURE/ENEMY/enemy001.png",
 }; //テクスチャの相対パスのパス
 
 //===================
@@ -720,6 +723,10 @@ void HitEnemy(int nCntEnemy, int nDamage)
 	//ヒット音
 
 	PlaySound(SOUND_LABEL_SE_HIT000);
+
+	//コンボ数を加算
+
+	AddCombo();
 
 	//ライフを減らす
 	

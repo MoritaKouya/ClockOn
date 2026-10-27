@@ -14,6 +14,7 @@
 #include "block.h"
 #include "camera.h"
 #include "chargeeffect.h"
+#include "combo.h"
 #include "effect.h"
 #include "enemy.h"
 #include "fade.h"
@@ -25,15 +26,12 @@
 #include "laser.h"
 #include "scaffold.h"
 #include "screeneffect.h"
+#include "selectstage.h"
 #include "sparkle.h"
 #include "stoptime.h"
 #include "stoptime_playereffect.h"
 #include "player.h"
 #include "playereffect.h"
-
-//マクロ定義
-
-#define NUM_MAP (1) //マップのタイプ
 
 //オブジェクトの列挙型定義
 
@@ -58,14 +56,18 @@ typedef enum
 
 //グローバル変数
 
-const char* g_aStageFile_Path[NUM_MAP] =
+const char* g_aStageFile_Path[STAGE_MAX] =
 {
-	"Data/SAVEDATA/STAGE/stage000.csv"
+	"Data/SAVEDATA/STAGE/stage000.csv",
+
+	"Data/SAVEDATA/STAGE/stage001.csv",
 }; //ステージのファイルの相対パス
 
 LPD3DXFONT g_FontTutrial;
 
 float g_StageWidth; //ステージの幅
+
+STAGE* g_pStage = 0;
 
 //==================================
 //ゲーム画面の初期化処理 
@@ -74,19 +76,25 @@ void InitGame(void)
 {
 	D3DXVECTOR3 posPlayer; //プレイヤーの初期位置を代入
 
-	//デバッグ表示用フォントを生成
+	g_pStage = GetSelectStage();
 
-	//デバイスの取得
+	if (*g_pStage == STAGE_1_0)
+	{
 
-	LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
+		//デバッグ表示用フォントを生成
 
-	pDevice = GetDevice();
+		//デバイスの取得
 
-	D3DXCreateFont(pDevice, 18, 0, FW_HEAVY, 0, FALSE, SHIFTJIS_CHARSET,
+		LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
+		pDevice = GetDevice();
 
-		"ＭＳ ゴシック", &g_FontTutrial);
+		D3DXCreateFont(pDevice, 18, 0, FW_HEAVY, 0, FALSE, SHIFTJIS_CHARSET,
+
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
+
+			"ＭＳ ゴシック", &g_FontTutrial);
+	}
 
 	//+----------------------------
 	//|各オブジェクトの初期化処理
@@ -109,6 +117,10 @@ void InitGame(void)
 	//照準
 
 	InitAim();
+
+	//コンボ
+
+	InitCombo();
 
 	//ブロック
 
@@ -183,8 +195,8 @@ D3DXVECTOR3 LoadStage(void)
 		nScan = 0; //読み込んだ値を代入する変数
 
 	D3DXVECTOR3 posPlayer; //プレイヤーの位置
-
-	pFile = fopen(g_aStageFile_Path[0], "r");
+	
+	pFile = fopen(g_aStageFile_Path[*g_pStage], "r");
 
 	if (pFile != NULL)
 	{
@@ -308,6 +320,10 @@ void UninitGame(void)
 	//照準
 
 	UninitAim();
+
+	//コンボ
+
+	UninitCombo();
 
 	//ブロック
 
@@ -443,6 +459,10 @@ void UpdateGame(void)
 
 	UpdateScreenEffect(); //画面の演出
 
+	//コンボ
+
+	UpdateCombo();
+
 	if (GetStopTime()->bStopTime == false)
 	{ //時間停止中じゃない場合
 
@@ -529,9 +549,16 @@ void DrawGame(void)
 
 	DrawScreenEffect(); //画面の演出
 
-	//操作方法
+	if (*g_pStage == STAGE_1_0)
+	{
+		//操作方法
 
-	DrawHowToUse();
+		DrawHowToUse();
+	}
+
+	//コンボ
+
+	DrawCombo();
 
 	//照準
 
