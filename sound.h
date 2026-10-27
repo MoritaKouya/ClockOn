@@ -26,6 +26,7 @@ typedef enum
 	SOUND_LABEL_SE_DASH,        // ダッシュ
 	SOUND_LABEL_SE_AVOIDANCE,   // 回避音
 	SOUND_LABEL_SE_JUMP,        //ジャンプ
+	SOUND_LABEL_SE_FOOTSTEPS,   //足音
 
 	SOUND_LABEL_SE_ITEMBOX,     //アイテムボックス
 

@@ -155,6 +155,7 @@
     <ClCompile Include="chargeeffect.cpp" />
     <ClCompile Include="clock.cpp" />
     <ClCompile Include="clockhands.cpp" />
+    <ClCompile Include="lockonaim.cpp" />
     <ClCompile Include="screeneffect.cpp" />
     <ClCompile Include="effect.cpp" />
     <ClCompile Include="enemy.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="chargeeffect.h" />
     <ClInclude Include="clock.h" />
     <ClInclude Include="clockhands.h" />
+    <ClInclude Include="lockonaim.h" />
     <ClInclude Include="screeneffect.h" />
     <ClInclude Include="effect.h" />
     <ClInclude Include="enemy.h" />

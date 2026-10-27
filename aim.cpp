@@ -5,7 +5,10 @@
 // 
 //=============================
 #include "aim.h"
+
+#include "enemy.h"
 #include "input.h"
+#include "lockonaim.h"
 #include "player.h"
 
 //マクロ定義
@@ -13,6 +16,8 @@
 #define AIM_SIZE (40) //照準のサイズ
 
 #define AIM_SPEED (10) //照準のスピード
+
+#define DISTANCE_LOCKON (40) //ロックオンできる距離
 
 //グローバル変数
 
@@ -137,6 +142,10 @@ void InitAim(void)
 	//頂点バッファをアンロックする
 
 	g_pVtxBuffAim->Unlock();
+
+	//各項目の初期化処理
+
+	InitLockonAim(); //ロックオンエイム
 }
 
 //==================================
@@ -159,6 +168,10 @@ void UninitAim(void)
 
 		g_pVtxBuffAim = NULL;
 	}
+
+	//各項目の終了処理
+
+	UninitLockonAim(); //ロックオンエイム
 }
 
 //==================================
@@ -263,6 +276,64 @@ void MoveAim(void)
 	//頂点バッファをアンロックする
 
 	g_pVtxBuffAim->Unlock();
+
+	//各項目の更新処理
+
+	UpdateLockonAim(); //ロックオンエイム
+}
+
+//==================================
+// ロックオンの処理
+//==================================
+void Lockon(void)
+{
+	Player* pPlayer = GetPlayer(); //プレイヤーの情報を獲得
+
+	Enemy* pEnemy = GetEnemy(); //敵の情報を獲得
+
+	int nCount;
+
+	float fDistance; //敵との距離
+
+	float fMinDistance = SCREEN_WIDTH + 100; //最短の敵との距離
+
+	int nLockonEnemy = -1; //ロックオンしている敵
+
+	for (nCount = 0; nCount < MAX_ENEMY; nCount++, pEnemy++)
+	{
+		if (pEnemy->bUse == true)
+		{ //敵が使用されている場合
+
+			//敵とエイムの距離の計算
+
+			fDistance = GetDistance(pEnemy->ScreenPos);
+
+			if (fDistance < DISTANCE_LOCKON * DISTANCE_LOCKON)
+			{ //ロックオンできる距離の場合
+
+				if (fDistance < fMinDistance * fMinDistance)
+				{ //ロックオンできる距離の中で最小の距離の場合
+				
+					fMinDistance = fDistance; //最小の距離を更新
+
+					nLockonEnemy = nCount; //敵の番号を代入
+				}
+			}
+		}
+	}
+
+	if (nLockonEnemy != -1)
+	{ //敵をロックオンできる場合
+
+		pPlayer->bLockon = true; //ロックオン状態にする
+
+		pPlayer->nLockonEnemy = nLockonEnemy; //ロックオンしている敵の番号を代入
+	}
+	else
+	{ //ロックオンできる敵がいない場合
+
+		pPlayer->bLockon = false; //ロックオン状態を解除する
+	}
 }
 
 //==================================
@@ -292,6 +363,9 @@ void DrawAim(void)
 											  //描画する最初の頂点インデックス
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 
+	//各項目の初期化処理
+
+	DrawLockonAim(); //ロックオンエイム
 }
 
 //==================================
@@ -300,4 +374,16 @@ void DrawAim(void)
 D3DXVECTOR3 GetPosAim(void)
 {
 	return g_posAim;
+}
+
+//==================================
+// エイムと敵の距離の獲得処理
+//==================================
+float GetDistance(D3DXVECTOR3 posEnemy)
+{
+	float fX = g_posAim.x - posEnemy.x; //Xの差
+
+	float fY = g_posAim.y - posEnemy.y; //Yの差
+
+	return (fX * fX) + (fY + fY);
 }

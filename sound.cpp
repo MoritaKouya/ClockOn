@@ -52,7 +52,8 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 
 	{"data/SE/dash.wav", 0},            // ダッシュ
 	{"data/SE/avoidance.wav", 0},       // 回避
-	{"data/SE/jump.wav", 0},
+	{"data/SE/jump.wav", 0},            //ジャンプ
+	{"data/SE/footsteps.wav", 0},       //足音
 
 	//アイテムボックス
 

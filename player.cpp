@@ -6,6 +6,7 @@
 //=============================
 #include "player.h"
 
+#include "enemy.h"
 #include "camera.h"
 #include "effect.h"
 #include "fade.h"
@@ -15,6 +16,7 @@
 #include "aim.h"
 #include "block.h"
 #include "laser.h"
+#include "lockonaim.h"
 #include "playereffect.h"
 #include "scaffold.h"
 #include "screeneffect.h"
@@ -29,6 +31,8 @@
 #define SHOOT_RECOIL (3) //球の反動
 
 #define MAX_PLAYERTEXTURE (1) //プレイヤーのテクスチャ数
+
+#define FOOTSTEPS_INTERVAL (40) //足音の間隔
 
 //アニメーション
 
@@ -104,15 +108,17 @@ void InitPlayer(D3DXVECTOR3 posPlayer)
 
 	g_player.nLife = MAX_HP; //体力
 
-	g_player.nAttack = 1; //攻撃力
-
-	g_player.nRate = 1; //連射力
-
 	g_player.fWidth = PLAYER_SIZE; //幅
 
 	g_player.fHeight = PLAYER_SIZE * 2; //高さ
 
+	g_player.bLockon = false; //ロックオンしていない状態にする
+
+	g_player.nLockonEnemy = 0; //ロックオンにしている敵
+
 	g_player.bJump = false; //ジャンプしているかどうか
+
+	g_player.nFootstepsCounter = FOOTSTEPS_INTERVAL;
 
 	g_player.bRightAim = true; //右向きかどうか
 
@@ -239,6 +245,26 @@ void UninitPlayer(void)
 //==================================
 void UpdatePlayer(void)
 {
+	Enemy* pEnemy = GetEnemy(); //敵の情報の取得
+
+	//ロックオンエイムに情報代入
+
+	LockonAim* pLockonAim = GetLockonAim();
+
+	//ロックオンの処理
+
+	if (GetKeyboardTrigger(DIK_F) == true || GetJoypadTrigger(JOYKEY_X) == true) //Aキーが押された場合
+	{ //左移動
+
+		Lockon(); //ロックオン
+	}
+
+	if (g_player.bLockon == true)
+	{ //敵が使用されている場合
+
+		pEnemy += g_player.nLockonEnemy; //敵のポインタをロックオンしている敵に合わせる
+	}
+
 	//移動
 
 	MovePlayer();
@@ -253,12 +279,35 @@ void UpdatePlayer(void)
 
 		StatePlayer();
 
-		//標準との角度を求める
+		//球の発射
 
-		D3DXVECTOR3 posAim = GetPosAim();
+		float AngleAim;
 
-		float AngleAim = CalcAngle(posAim);
+		if (g_player.bLockon == true)
+		{ //ロックオン状態の場合
 
+			AngleAim = CalcAngle(D3DXVECTOR3(pEnemy->ScreenPos.x, pEnemy->ScreenPos.y - ENEMY_SIZE, 0.0f)); //ロックオンしている敵の角度計算
+
+			if (pEnemy->bUse == false)
+			{ //敵が使用されていない場合
+
+				g_player.bLockon = false; //ロックオン状態を解除する
+
+				//ロックオンエイムを使用していない状態にする
+
+				pLockonAim->bUse = false;
+			}
+		}
+		else
+		{ //ロックオンしていない場合
+
+			//標準との角度を求める
+
+			D3DXVECTOR3 posAim = GetPosAim(); //標準の位置を獲得
+
+			AngleAim = CalcAngle(posAim); //標準との角度計算
+
+		}
 		//球の発射処理
 
 		ShootBallet(AngleAim);
@@ -274,31 +323,61 @@ void UpdatePlayer(void)
 
 	//SetPlayerEffect(g_player.pos, g_player.EffectCol,g_player.rot, PLAYER_SIZE + 10, 120);
 
+	//足音
+
+	
+	if (g_player.bJump == true)
+	{
+		FootstepsPlayer();
+	}
+
 	//頂点情報の更新
 
 	UpdatepVtx();
 
-	//プレイヤーのエフェクト
+	if (GetMode() == MODE_GAME)
+	{ //ゲームモードの場合
 
-	if (g_player.bJump == true)
-	{
-		if (1 < g_player.move.x)
-		{ //右向きの移動エフェクト
+		//プレイヤーのエフェクト
 
-			SetEffect(D3DXVECTOR3(g_player.pos.x + PLAYER_SIZE, g_player.pos.y, 0.0f),D3DXVECTOR3(0.0f,0.0f,0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+		if (g_player.bJump == true)
+		{
+			if (1 < g_player.move.x)
+			{ //右向きの移動エフェクト
 
+				SetEffect(D3DXVECTOR3(g_player.pos.x + PLAYER_SIZE, g_player.pos.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+
+			}
+			else if (g_player.move.x < -1)
+			{ //左向きの移動エフェクト
+
+				SetEffect(D3DXVECTOR3(g_player.pos.x - PLAYER_SIZE, g_player.pos.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+
+			}
 		}
-		else if (g_player.move.x < -1)
-		{ //左向きの移動エフェクト
 
-			SetEffect(D3DXVECTOR3(g_player.pos.x - PLAYER_SIZE, g_player.pos.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 30.0f, true);
+		//プレイヤーのエフェクト
 
+		SetPlayerEffect(g_player.pos, PLAYER_SIZE + 20.0f, 15);
+
+		if (pEnemy->bUse == true && g_player.bLockon == true)
+		{ //敵が使用されている場合
+
+			//ロックオンエイムの位置を合わせる
+
+			pLockonAim->pos = pEnemy->ScreenPos;
+
+			pLockonAim->pos.y -= ENEMY_SIZE;
+
+			//ロックオンエイムを使用している状態にする
+
+			pLockonAim->bUse = true;
+		}
+		else
+		{
+			pLockonAim->bUse = false;
 		}
 	}
-
-	//プレイヤーのエフェクト
-
-	SetPlayerEffect(g_player.pos, PLAYER_SIZE + 20.0f, 15);
 }
 //=========================
 // プレイヤーの移動処理
@@ -337,12 +416,24 @@ void MovePlayer(void)
 
 	}
 
-	if (GetMode() == MODE_GAME)
+	//ステージ選択画面の向き切り替え
+
+	if (GetMode() == MODE_SELECTSTAGE)
+	{ //ステージ選択画面の場合
+
+		if (0 < g_player.move.x)
+		{ //右向きの場合
+
+			g_player.bRightAim = true;
+		}
+		else if (g_player.move.x < 0)
+		{ //左向きの場合
+
+			g_player.bRightAim = false;
+		}
+	}
+	else if (GetMode() == MODE_GAME)
 	{
-		//重力
-
-		g_player.move.y += 2;
-
 		//ダッシュ
 
 		g_player.nDashCounter--;
@@ -414,6 +505,11 @@ void StatePlayer(void)
 	{
 	case PLAYERSTATE_NORMAL: //通常
 
+		if (g_player.col != D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f))
+		{
+			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+
 		break;
 
 	case PLAYERSTATE_DAMAGE: //ダメージ
@@ -423,10 +519,20 @@ void StatePlayer(void)
 		if (g_player.nCounterState <= 0) //カウンターステートが0になった
 		{
 			g_player.state = PLAYERSTATE_NORMAL; //プレイヤーの状態を通常にする
+		}
+		else if (7 < g_player.nCounterState % 15)
+		{
+			//頂点カラーの設定
+
+			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+		else
+		{
 
 			//頂点カラーの設定
 
-			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f,1.0f);
+			g_player.col = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.0f);
+
 		}
 
 		break;
@@ -441,7 +547,7 @@ void ShootBallet(float AngleAim)
 
 	if (g_player.nBulletCounter <= 0) //カウンターがゼロ以下の場合
 	{
-		if (GetMousePress(MOUSEBOTTOM_LEFT) == true || GetRT() == true) //球の発射
+		if (GetMouseTrigger(MOUSEBOTTOM_LEFT) == true || GetRTTrigger() == true) //球の発射
 		{ //スペースキーが押された
 
 			//球の設定
@@ -456,7 +562,7 @@ void ShootBallet(float AngleAim)
 				
 				,180
 
-				, g_player.nAttack
+				, 1
 
 				, AngleAim
 
@@ -464,7 +570,7 @@ void ShootBallet(float AngleAim)
 
 			//バレットのカウンターを増やす
 
-			g_player.nBulletCounter = 30;
+			g_player.nBulletCounter = 20;
 
 			PlaySound(SOUND_LABEL_SE_SHOT);
 		}
@@ -472,7 +578,7 @@ void ShootBallet(float AngleAim)
 }
 
 //===================
-//標準角度計算
+//角度計算
 //===================
 float CalcAngle(D3DXVECTOR3 pos)
 {
@@ -497,7 +603,7 @@ float CalcAngle(D3DXVECTOR3 pos)
 }
 
 //==================================
-// プレイヤーの頂点情報の更新処理
+// プレイヤーのアニメーション処理
 //==================================
 void AnimPlayer(void)
 {
@@ -522,11 +628,36 @@ void AnimPlayer(void)
 	}
 }
 
+void FootstepsPlayer(void)
+{
+	if (g_player.move.x < -1 || 1 < g_player.move.x)
+	{ //横移動している場合
+
+		g_player.nFootstepsCounter++; //カウンターをプラス
+
+		if (FOOTSTEPS_INTERVAL <= g_player.nFootstepsCounter)
+		{ //カウンターが間隔分進んだら
+
+			//足音を鳴らす
+
+			PlaySound(SOUND_LABEL_SE_FOOTSTEPS);
+
+			//リセットされるようにする
+
+			g_player.nFootstepsCounter %= FOOTSTEPS_INTERVAL;
+		}
+	}
+}
+
 //==================================
 // プレイヤーの頂点情報の更新処理
 //==================================
 void UpdatepVtx()
 {
+	//重力
+
+	g_player.move.y += 2;
+
 	//前回の位置を保存
 
 	g_player.posOld = g_player.pos;
@@ -739,7 +870,6 @@ void HitPlayer(HIT hit, int amount)
 
 					g_player.state = PLAYERSTATE_DAMAGE;
 
-					g_player.col = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
 				}
 			}
 

@@ -287,9 +287,9 @@ void UpdateEnemy(void)
 
 			//カメラに写ったら
 
-			if (0 < g_aEnemy[nCntEnemy].ScreenPos.x && g_aEnemy[nCntEnemy].ScreenPos.x < SCREEN_WIDTH
+			if (0 < g_aEnemy[nCntEnemy].ScreenPos.x + ENEMY_SIZE && g_aEnemy[nCntEnemy].ScreenPos.x - ENEMY_SIZE < SCREEN_WIDTH
 
-				&& 0 < g_aEnemy[nCntEnemy].ScreenPos.y && g_aEnemy[nCntEnemy].ScreenPos.y < SCREEN_HEIGHT)
+				&& 0 < g_aEnemy[nCntEnemy].ScreenPos.y + ENEMY_SIZE && g_aEnemy[nCntEnemy].ScreenPos.y- ENEMY_SIZE < SCREEN_HEIGHT)
 			{
 
 				if (GetStopTime()->bStopTime == false)
@@ -482,7 +482,7 @@ void ActionType1(int nCnt)
 			g_aEnemy[nCnt].move.x = 3;
 		}
 	}
-	else if (300 == g_aEnemy[nCnt].nCounterAction++) //カウンターが480を超えた場合
+	else if (300 == g_aEnemy[nCnt].nCounterAction) //カウンターが480を超えた場合
 	{
 		if (pPlayer->pos.y <= g_aEnemy[nCnt].pos.y)
 		{
@@ -495,7 +495,7 @@ void ActionType1(int nCnt)
 
 		g_aEnemy[nCnt].move.x = 0;
 	}
-	else if (600 == g_aEnemy[nCnt].nCounterAction++)
+	else if (480 <= g_aEnemy[nCnt].nCounterAction)
 	{
 		//行動カウンターをリセット
 

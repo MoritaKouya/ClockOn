@@ -248,12 +248,7 @@ void DrawScaffold(void)
 		if (g_aScaffold[nCntScaffold].bUse == true)
 		{ //足場が使用されている場合
 
-			//カメラに写ったら
-
-			if (0 < g_aScaffold[nCntScaffold].ScreenPos.x && g_aScaffold[nCntScaffold].ScreenPos.x < SCREEN_WIDTH
-
-				&& 0 < g_aScaffold[nCntScaffold].ScreenPos.y && g_aScaffold[nCntScaffold].ScreenPos.y < SCREEN_HEIGHT)
-			{
+			
 
 				//テクスチャの設定
 
@@ -262,7 +257,7 @@ void DrawScaffold(void)
 				//ポリゴンの描画
 														  //描画を開始する頂点インデックス
 				pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, nCntScaffold * 4, 2);
-			}
+			
 		}
 	}
 }
@@ -346,47 +341,40 @@ bool CollisionScaffold(D3DXVECTOR3* pPos, D3DXVECTOR3* pPosOld, D3DXVECTOR3* pMo
 	{
 		if (g_aScaffold[nCount].bUse == true)
 		{
-			//カメラに写ったら
+			//縦の当たり判定
 
-			if (0 < g_aScaffold[nCount].ScreenPos.x && g_aScaffold[nCount].ScreenPos.x < SCREEN_WIDTH
+			if (g_aScaffold[nCount].pos.x < pPos->x + fWidth
 
-				&& 0 < g_aScaffold[nCount].ScreenPos.y && g_aScaffold[nCount].ScreenPos.y < SCREEN_HEIGHT)
-			{
+				&& pPos->x - fWidth < g_aScaffold[nCount].pos.x + g_aScaffold[nCount].fWidth)
+			{ //横の判定
+				if (pPosOld->y <= g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight
 
-				//縦の当たり判定
+					&& g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight < pPos->y)
+				{ //上から下
+					bLanding = true; //ジャンプが可能
 
-				if (g_aScaffold[nCount].pos.x < pPos->x + fWidth
+					pPos->y = g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight; //プレイヤーの位置を足場の上にする
 
-					&& pPos->x - fWidth < g_aScaffold[nCount].pos.x + g_aScaffold[nCount].fWidth)
-				{ //横の判定
-					if (pPosOld->y <= g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight
+					pMove->y = 0.0f;
 
-						&& g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight < pPos->y)
-					{ //上から下
-						bLanding = true; //ジャンプが可能
-
-						pPos->y = g_aScaffold[nCount].pos.y - g_aScaffold[nCount].fHeight; //プレイヤーの位置を足場の上にする
-
-						pMove->y = 0.0f;
-
-						//スティックの入力を獲得
+					//スティックの入力を獲得
 
 
-						if (bplayer == true)
-						{ //プレイヤーの場合
+					if (bplayer == true)
+					{ //プレイヤーの場合
 
-							D3DXVECTOR3 stick = GetLeftStick();
+						D3DXVECTOR3 stick = GetLeftStick();
 
-							if (stick.y < -0.5 || GetKeyboardPress(DIK_S) == true) //下方向に入力されている場合
-							{
-								//移動量の更新
+						if (stick.y < -0.5 || GetKeyboardPress(DIK_S) == true) //下方向に入力されている場合
+						{
+							//移動量の更新
 
-								pPos->y = g_aScaffold[nCount].pos.y + 1;
-							}
+							pPos->y = g_aScaffold[nCount].pos.y + 1;
 						}
 					}
 				}
 			}
+
 		}
 	}
 

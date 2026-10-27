@@ -75,14 +75,15 @@ typedef struct
 
 	bool bRightAim; //向き(true;右向きfalse;左向き)
 
+	bool bLockon; //ロックオンをしているかどうか
+
+	int nLockonEnemy; //ロックオンしている敵の番号
+
+	int nFootstepsCounter; //足音カウンター
+
 	//ステータス
 
 	int nLife; //体力
-
-	int nAttack; //攻撃力
-
-	int nRate; //連射力
-
 }Player;
 
 //プロトタイプ宣言
@@ -108,6 +109,8 @@ void ShootBallet(float AngleAim); //球の発射
 float CalcAngle(D3DXVECTOR3 pos); //照準との角度計算
 
 void AnimPlayer(void); //アニメーション
+
+void FootstepsPlayer(void); //足音
 
 void UpdatepVtx(void); //頂点座標の移動
 

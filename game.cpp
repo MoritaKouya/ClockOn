@@ -385,6 +385,10 @@ void UpdateGame(void)
 
 	UpdateCamera(); //カメラ
 
+	//照準
+
+	UpdateAim();
+
 	UpdatePlayer(); //プレイヤー
 
 	UpdatePlayerEffect(); //プレイヤーのエフェクト
@@ -394,10 +398,6 @@ void UpdateGame(void)
 	UpdateStopTime();
 
 	UpdateStoptimePlayerEffect(); //時間停止のエフェクト
-
-	//照準
-
-	UpdateAim();
 
 	//ブロック
 
