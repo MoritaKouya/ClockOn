@@ -67,7 +67,9 @@ LPD3DXFONT g_FontTutrial;
 
 float g_StageWidth; //ステージの幅
 
-STAGE* g_pStage = 0;
+STAGE* g_pStage; //ステージ
+
+bool bClear; //Clearしているかどうか
 
 //==================================
 //ゲーム画面の初期化処理 
@@ -95,6 +97,8 @@ void InitGame(void)
 
 			"ＭＳ ゴシック", &g_FontTutrial);
 	}
+
+	bClear = false; //Clearしていない状態にする
 
 	//+----------------------------
 	//|各オブジェクトの初期化処理
@@ -576,7 +580,7 @@ void DrawHowToUse(void)
 
 	//文字列に代入
 
-	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n""移動：WASD / Lスティックor十字キー\n""照準操作：マウス移動 / Rスティック\n""銃：左クリック / RTボタン\n""タイムストップ：SHIFTキー / LTボタン\n""ダッシュ：右クリック / Aボタン\n""ジャンプ：SPACEキー / Bボタン\n");
+	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n""移動：WASD / Lスティックor十字キー\n""照準操作：マウス移動 / Rスティック\n""銃：左クリック / RTボタン\n""タイムストップ：SHIFTキー / LTボタン\n""ダッシュ：右クリック / Aボタン\n""ジャンプ：SPACEキー / Bボタン\n" "ロックオン：Fキー / Xボタン");
 
 	//テキストの描画
 
@@ -589,4 +593,12 @@ void DrawHowToUse(void)
 float GetStageWidth(void)
 {
 	return g_StageWidth;
+}
+
+//==========================
+//ステージの幅の獲得処理
+//==========================
+bool* GetClear(void)
+{
+	return &bClear; //Clearしているかどうかのポインタを返す
 }

@@ -17,7 +17,7 @@
 
 #define AIM_SPEED (10) //照準のスピード
 
-#define DISTANCE_LOCKON (40) //ロックオンできる距離
+#define DISTANCE_LOCKON (ENEMY_SIZE + 40) //ロックオンできる距離
 
 //グローバル変数
 
@@ -295,7 +295,7 @@ void Lockon(void)
 
 	float fDistance; //敵との距離
 
-	float fMinDistance = SCREEN_WIDTH + 100; //最短の敵との距離
+	float fMinDistance = (SCREEN_WIDTH + 100) * (SCREEN_WIDTH + 100); //最短の敵との距離(絶対あり得ない数値を代入)
 
 	int nLockonEnemy = -1; //ロックオンしている敵
 
@@ -311,7 +311,7 @@ void Lockon(void)
 			if (fDistance < DISTANCE_LOCKON * DISTANCE_LOCKON)
 			{ //ロックオンできる距離の場合
 
-				if (fDistance < fMinDistance * fMinDistance)
+				if (fDistance < fMinDistance)
 				{ //ロックオンできる距離の中で最小の距離の場合
 				
 					fMinDistance = fDistance; //最小の距離を更新
@@ -385,5 +385,5 @@ float GetDistance(D3DXVECTOR3 posEnemy)
 
 	float fY = g_posAim.y - posEnemy.y; //Yの差
 
-	return (fX * fX) + (fY + fY);
+	return (fX * fX) + (fY * fY);
 }

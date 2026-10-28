@@ -37,6 +37,8 @@ void DrawHowToUse(void); //プレイ方法
 
 //獲得
 
-float GetStageWidth(void);
+float GetStageWidth(void); //画面の端
+
+bool* GetClear(void); //Clearかどうかを判定する処理
 
 #endif 

@@ -13,9 +13,9 @@
 
 //マクロ定義
 
-#define TITLE_SIZE_X (500) //横の半径
+#define TITLE_SIZE_X (640) //横の半径
 
-#define TITLE_SIZE_Y (150) //縦の半径
+#define TITLE_SIZE_Y (360) //縦の半径
 
 //グローバル変数
 
