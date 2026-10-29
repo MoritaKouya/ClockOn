@@ -10,6 +10,7 @@
 #include "input.h"
 #include "lockonaim.h"
 #include "player.h"
+#include "sound.h"
 
 //マクロ定義
 
@@ -324,6 +325,8 @@ void Lockon(void)
 
 	if (nLockonEnemy != -1)
 	{ //敵をロックオンできる場合
+
+		PlaySound(SOUND_LABEL_SE_LOCKON);
 
 		pPlayer->bLockon = true; //ロックオン状態にする
 

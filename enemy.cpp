@@ -20,6 +20,10 @@
 
 //マクロ定義
 
+#define MAX_CHARGECOUNTER (10 * 60) //チャージの時間
+
+#define CHARGEEFFECT_INTERVAL (MAX_CHARGECOUNTER / 20) //チャージエフェクトの生成間隔
+
 //アニメーション
 
 #define MAX_ANIM_ENEMY (6) //アニメーションの最大数
@@ -92,6 +96,8 @@ void InitEnemy(void)
 		g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL; //状態
 
 		g_aEnemy[nCntEnemy].nCounterState = 0; //状態カウント
+
+		g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンター
 
 		g_aEnemy[nCntEnemy].nCounterAction = 0;
 
@@ -216,7 +222,7 @@ void LoadEnemy(void)
 	{ //ファイルが開いた場合
 		
 		for (nCount = 0; nCount < ENEMYTYPE_MAX; nCount++)
-		{ //Y座標の最大数分繰り返す
+		{ //敵のタイプのの最大数分繰り返す
 
 			//タイプを読み込む
 
@@ -226,7 +232,7 @@ void LoadEnemy(void)
 
 			g_aEnemyInfo[nType].type = (ENEMYTYPE)nType; //タイプ
 
-			(void)fscanf(pFile, "%d%*[,]", &g_aEnemyInfo[nType].nWeapon); //ライフ
+			(void)fscanf(pFile, "%d%*[,]", &g_aEnemyInfo[nType].nWeapon); //武器
 
 			(void)fscanf(pFile, "%d%*[,]", &g_aEnemyInfo[nType].nLife); //ライフ
 			
@@ -326,9 +332,16 @@ void UpdateEnemy(void)
 							}
 						}
 
-						ActionEnemy(nCntEnemy); //行動
+						if (0 <= g_aEnemy[nCntEnemy].nChargeCounter)
+						{
+							ActionEnemy(nCntEnemy); //行動
 
-						AnimEnemy(nCntEnemy); //アニメーション
+							AnimEnemy(nCntEnemy); //アニメーション
+						}
+						else
+						{
+							g_aEnemy[nCntEnemy].nChargeCounter--;
+						}
 					}
 				}
 			}
@@ -446,11 +459,11 @@ void ActionEnemy(int nCnt)
 
 		break;
 
-	//case ENEMYTYPE_2:
+	case ENEMYTYPE_1:
 
-	//	ActionType2(nCnt); //パターン２
+		ActionType2(nCnt); //パターン２
 
-	//	break;
+		break;
 
 	//case ENEMYTYPE_3:
 
@@ -464,6 +477,11 @@ void ActionEnemy(int nCnt)
 
 	//	break;
 	}
+
+	//移動処理
+
+	MoveEnemy(nCnt);
+
 }
 //==================
 // 敵の行動パターン１
@@ -516,11 +534,65 @@ void ActionType1(int nCnt)
 	{
 		g_aEnemy[nCnt].move.x = 0;
 	}
-
-	//移動処理
-
-	MoveEnemy(nCnt);
 }
+
+//==================
+// 敵の行動パターン2
+//==================
+void ActionType2(int nCnt)
+{
+	g_aEnemy[nCnt].nCounterAction++; //行動カウンターをプラス
+
+	Player* pPlayer = GetPlayer();
+
+	if (0 <= g_aEnemy[nCnt].nCounterAction && g_aEnemy[nCnt].nCounterAction < 300)
+	{
+		if (pPlayer->pos.x <= g_aEnemy[nCnt].pos.x)
+		{
+			g_aEnemy[nCnt].move.x = -3;
+		}
+		else
+		{
+			g_aEnemy[nCnt].move.x = 3;
+		}
+	}
+	else if (300 == g_aEnemy[nCnt].nCounterAction) //カウンターが480を超えた場合
+	{
+		if (pPlayer->pos.y <= g_aEnemy[nCnt].pos.y)
+		{
+			g_aEnemy[nCnt].move.y = -30;
+		}
+		else if (g_aEnemy[nCnt].pos.y <= pPlayer->pos.y)
+		{
+			g_aEnemy[nCnt].pos.y++;
+		}
+
+		g_aEnemy[nCnt].move.x = 0;
+	}
+	else if (480 <= g_aEnemy[nCnt].nCounterAction)
+	{
+		//行動カウンターをリセット
+
+		g_aEnemy[nCnt].nCounterAction = 0;
+	}
+
+	//かくかくしないようにする
+
+	float distanceX = pPlayer->pos.x - g_aEnemy[nCnt].pos.x;
+
+	float threshold = 80.0f; // 位置を変えない距離
+
+	// プレイヤーと敵の距離が向きを変えない距離より離れている場合
+	if (fabsf(distanceX) < threshold)
+	{
+		//チャージのカウンターを設定
+
+		g_aEnemy[nCnt].nChargeCounter = MAX_CHARGECOUNTER;
+	}
+
+
+}
+
 //==========================
 // 敵の移動処理
 //==========================
@@ -594,6 +666,22 @@ void AnimEnemy(int nCnt)
 }
 
 //===================
+// 敵のチャージの処理
+//===================
+void Charge(int nCnt)
+{
+	//ランダムで３２方向からチャージエフェクトを出す(D3DX_PI / 32 * rand)
+}
+
+//===================
+// 敵のチャージ攻撃の処理
+//===================
+void ChargeAttack(int nCnt)
+{
+
+}
+
+//===================
 // 敵の描画処理
 //===================
 void DrawEnemy(void)
@@ -638,7 +726,7 @@ void DrawEnemy(void)
 //===================
 // 敵の設定処理
 //===================
-void SetEnemy(D3DXVECTOR3 pos, ENEMYTYPE type)
+void SetEnemy(D3DXVECTOR3 pos, int type)
 {
 	int nCntEnemy;
 
@@ -652,6 +740,7 @@ void SetEnemy(D3DXVECTOR3 pos, ENEMYTYPE type)
 
 	for (nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++, pVtx += 4)
 	{
+
 		if (g_aEnemy[nCntEnemy].bUse == false)
 		{
 			//敵の情報の設定(Enemy構造体)
@@ -706,7 +795,7 @@ void SetEnemy(D3DXVECTOR3 pos, ENEMYTYPE type)
 
 			g_nNumEnemy++;
 
-			SetEnemyWeapon(g_aEnemy[nCntEnemy].pos, (int)g_aEnemy[nCntEnemy].EnemyInfo.type);
+			SetEnemyWeapon(g_aEnemy[nCntEnemy].pos, g_aEnemy[nCntEnemy].EnemyInfo.nWeapon);
 
 			break;
 		}

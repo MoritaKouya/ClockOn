@@ -27,6 +27,7 @@
 #include "scaffold.h"
 #include "screeneffect.h"
 #include "selectstage.h"
+#include "sound.h"
 #include "sparkle.h"
 #include "stoptime.h"
 #include "stoptime_playereffect.h"
@@ -80,10 +81,16 @@ void InitGame(void)
 
 	g_pStage = GetSelectStage();
 
-	if (*g_pStage == STAGE_1_0)
-	{
+	//BGM
 
-		//デバッグ表示用フォントを生成
+	PlaySound(SOUND_LABEL_BGM_1_0);
+
+	//操作方法表示用フォントを生成
+
+	if (*g_pStage == STAGE_1_0)
+	{ //1-0の場合
+
+		
 
 		//デバイスの取得
 
@@ -299,6 +306,8 @@ D3DXVECTOR3 LoadStage(void)
 //==================================
 void UninitGame(void)
 {
+	StopSound(SOUND_LABEL_BGM_1_0);
+
 	//+----------------------------
 	//|各オブジェクトの終了処理
 	//+----------------------------
@@ -389,14 +398,6 @@ void UninitGame(void)
 //==================================
 void UpdateGame(void)
 {
-	if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_START))
-	{ //決定キーが押された
-
-		//モード設定
-
-		SetFade(MODE_RESULT);
-	}
-
 	//+----------------------------
 	//|各オブジェクトの更新処理
 	//+----------------------------
@@ -405,11 +406,9 @@ void UpdateGame(void)
 
 	UpdateCamera(); //カメラ
 
-	//照準
-
-	UpdateAim();
-
 	UpdatePlayer(); //プレイヤー
+
+	UpdateAim(); //照準
 
 	UpdatePlayerEffect(); //プレイヤーのエフェクト
 
@@ -515,21 +514,22 @@ void DrawGame(void)
 
 	DrawItemBox(); //アイテムボックス
 
-	//キラキラ
-
-	DrawSparkle();
-
-	//チャージエフェクト
-
-	DrawChargeEffect();
-
 	//レーザー
 
 	DrawLaser();
 
-	//時計
+	//球
 
-	DrawStopTime();
+	DrawBullet();
+
+	//エフェクト
+
+	DrawEffect();
+
+
+	//キラキラ
+
+	DrawSparkle();
 
 	//敵
 
@@ -541,15 +541,11 @@ void DrawGame(void)
 
 	DrawPlayer(); //プレイヤー
 
+	//時計
+
+	DrawStopTime();
+
 	DrawStoptimePlayerEffect(); //時間停止のエフェクト
-
-	//球
-
-	DrawBullet();
-
-	//エフェクト
-
-	DrawEffect();
 
 	DrawScreenEffect(); //画面の演出
 

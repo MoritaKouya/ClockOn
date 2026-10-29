@@ -70,6 +70,8 @@ typedef struct
 
 	int nCounterAction; //行動カウンター
 
+	int nChargeCounter; //チャージのカウンター
+
 	int nCountterAnimEnemy; //アニメーションカウンター
 
 	int nPatternAnimEnemy; //アニメーションパターンNo
@@ -111,7 +113,13 @@ void ActionEnemy(int nCnt); //関数呼び出し用
 
 void ActionType1(int nCnt); //行動パターン１
 
+void ActionType2(int nCnt); //行動パターン１
+
 void MoveEnemy(int nCnt); //敵の移動
+
+void Charge(int nCnt); //チャージ
+
+void ChargeAttack(int nCnt);
 
 //描画
 
@@ -119,7 +127,7 @@ void DrawEnemy(void);
 
 //設定
 
-void SetEnemy(D3DXVECTOR3 pos, ENEMYTYPE nType);
+void SetEnemy(D3DXVECTOR3 pos, int type);
 
 //命中
 

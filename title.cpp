@@ -30,6 +30,8 @@ D3DXVECTOR3 g_posTitle;
 //==================================
 void InitTitle(void)
 {
+	PlaySound(SOUND_LABEL_BGM000);
+
 	g_posTitle = D3DXVECTOR3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, 0.0f);
 
 	LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
@@ -138,6 +140,8 @@ void InitTitle(void)
 //==================================
 void UninitTitle(void)
 {
+	StopSound(SOUND_LABEL_BGM000);
+
 	//テクスチャの破棄
 
 	if (g_pTextureTitle != NULL)
@@ -182,6 +186,10 @@ void UpdateTitle(void)
 
 		if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_A))
 		{ //決定キーが押された
+
+			//サウンド
+
+			PlaySound(SOUND_LABEL_SE_ENTER);
 
 			switch (int nSelect = GetTitleMenuSelect()) //0で開始1で終了
 			{

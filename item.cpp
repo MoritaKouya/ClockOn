@@ -454,6 +454,8 @@ void HitItem(Item* pItem)
 //==================================
 void HitItemTimer(void)
 {
+	PlaySound(SOUND_LABEL_SE_ITEM);
+
 	StopTime* pStopTime = GetStopTime(); //時間停止の情報のポインタを獲得
 
 	pStopTime->nCounterStopTime = STOP_TIME_FRAME; //時間停止のカウンターを最大数にリセット

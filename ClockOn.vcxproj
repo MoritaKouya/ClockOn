@@ -158,6 +158,7 @@
     <ClCompile Include="combo.cpp" />
     <ClCompile Include="countcombo.cpp" />
     <ClCompile Include="decidebutton.cpp" />
+    <ClCompile Include="gameresult.cpp" />
     <ClCompile Include="lockonaim.cpp" />
     <ClCompile Include="screeneffect.cpp" />
     <ClCompile Include="effect.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="combo.h" />
     <ClInclude Include="countcombo.h" />
     <ClInclude Include="decidebutton.h" />
+    <ClInclude Include="gameresult.h" />
     <ClInclude Include="lockonaim.h" />
     <ClInclude Include="screeneffect.h" />
     <ClInclude Include="effect.h" />

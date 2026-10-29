@@ -35,29 +35,48 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 {
 	//bgm
 
-	{"data/BGM/bgm000.wav", -1},		// BGM0
+	{"Data/BGM/bgm000.wav", -1},		// BGM0
+	{"Data/BGM/bgm001.wav", -1},		// BGM1
+	{"Data/BGM/bgm002.wav", -1},        // BGM2
+
+
+	{"Data/BGM/stage1_0.wav", -1},      //コース0
 
 	//時計
 
-	{"data/BGM/clock000.wav", -1},		// 時計のサウンド
-	{"data/SE/clocksound.wav", 0},      // 時計のSE
+	{"Data/BGM/clock000.wav", -1},		// 時計のサウンド
+	{"Data/SE/clocksound.wav", 0},      // 時計のSE
 
 	//SE
 
-	{"data/SE/shot000.wav", 0},			// 弾発射音
-	{"data/SE/hit000.wav", 0},			// 被弾音
-	{"data/SE/hit001.wav", 0},			// 被弾音
+	{"Data/SE/arrow.wav", 0},      // 時計のSE
+	{"Data/SE/enter.wav", 0},      // 時計のSE
+
+	{"Data/SE/shot000.wav", 0},			// 弾発射音
+	{"Data/SE/hit000.wav", 0},			// 被弾音
+	{"Data/SE/hit001.wav", 0},			// 被弾音
 
 	//プレイヤー
 
-	{"data/SE/dash.wav", 0},            // ダッシュ
-	{"data/SE/avoidance.wav", 0},       // 回避
-	{"data/SE/jump.wav", 0},            //ジャンプ
-	{"data/SE/footsteps.wav", 0},       //足音
+	{"Data/SE/dash.wav", 0},            // ダッシュ
+	{"Data/SE/avoidance.wav", 0},       // 回避
+	{"Data/SE/jump.wav", 0},            //ジャンプ
+	{"Data/SE/footsteps.wav", 0},       //足音
+	{"Data/SE/lockon.wav", 0},          //ロックオン
+	
 
-	//アイテムボックス
+	//アイテム
 
-	{"data/SE/itembox.wav", 0},
+	{"Data/SE/item.wav", 0},
+	{"Data/SE/itembox.wav", 0},         //アイテムボックス
+
+	//ゴール
+
+	{"Data/SE/goal.wav", 0},            //ゴール
+
+	//リザルト
+
+	{"Data/SE/gameresult.wav", 0},      //ゲームリザルト
 };
 
 //=============================================================================
