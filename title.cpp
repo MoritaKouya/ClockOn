@@ -7,6 +7,7 @@
 #include "title.h"
 #include "input.h"
 #include "fade.h"
+#include "gloweffect.h"
 #include "sound.h"
 #include "bg.h"
 #include "titlemenu.h"
@@ -133,6 +134,8 @@ void InitTitle(void)
 	InitBg(); //bgの初期化
 
 	InitTitleMenu(); //タイトルメニューの初期化
+
+	InitGloweffect(); //グローエフェクト
 }
 
 //==================================
@@ -165,6 +168,8 @@ void UninitTitle(void)
 	UninitBg(); //Bg
 
 	UninitTitleMenu(); //タイトルメニュー
+
+	UninitGloweffect(); //グローエフェクト
 }
 
 //==================================
@@ -178,12 +183,6 @@ void UpdateTitle(void)
 
 	if (fade == FADE_NONE) //フェードしていない場合
 	{
-		//各オブジェクトの更新処理
-
-		UpdateBg(); //Bg
-
-		UpdateTitleMenu(); //タイトルメニュー
-
 		if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_A))
 		{ //決定キーが押された
 
@@ -213,6 +212,14 @@ void UpdateTitle(void)
 			}
 
 		}
+
+		//各オブジェクトの更新処理
+
+		UpdateBg(); //Bg
+
+		UpdateTitleMenu(); //タイトルメニュー
+
+		UpdateGloweffect(); //グローエフェクト
 	}
 }
 
@@ -221,11 +228,9 @@ void UpdateTitle(void)
 //==================================
 void DrawTitle(void)
 {
-	//各オブジェクトの描画処理
+	//背景の描画
 
 	DrawBg(); //Bg
-
-	DrawTitleMenu(); //タイトルメニュー
 
 	LPDIRECT3DDEVICE9 pDevice; //デバイスへのポインタ
 
@@ -249,4 +254,10 @@ void DrawTitle(void)
 	//ポリゴンの描画
 											  //描画する最初の頂点インデックス
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+	//各オブジェクトの描画処理
+
+	DrawGloweffect(); //グローエフェクト
+
+	DrawTitleMenu(); //タイトルメニュー
 }
