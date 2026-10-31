@@ -1,6 +1,6 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
@@ -104,7 +104,7 @@ void MovePlayer(void); //移動
 
 void StatePlayer(void); //状態
 
-void ShootBallet(float AngleAim); //球の発射
+void ShootBullet(float AngleAim); //球の発射
 
 float CalcAngle(D3DXVECTOR3 pos); //照準との角度計算
 

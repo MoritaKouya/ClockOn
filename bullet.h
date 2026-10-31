@@ -1,21 +1,32 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
 #ifndef _BULLET_H_
 #define _BULLET_H_
 
+//球の所有者の列挙型定義
+
+typedef enum
+{
+	BULLETOWNER_PLAYER = 0, //プレイヤーの球
+
+	BULLETOWNER_ENEMY, //敵の球
+
+	BULLETOWNER_MAX
+}BULLETOWNER;
+
 //球の種類の列挙型定義
 
 typedef enum
 {
-	BULLETTYPE_PLAYER = 0, //プレイヤーの球
+	BULLETTYPE_PLAYER = 0, //プレイヤーの弾
 
-	BULLETTYPE_ENEMY, //敵の球
+	BULLETTYPE_FIRE,       //火の玉
 
-	BULLETTYPE_MAX
+	BULLETTYPE_MAX         //最大数
 }BULLETTYPE;
 
 //球構造体の定義
@@ -33,6 +44,10 @@ typedef struct
 	int nDamage; //ダメージ量
 
 	float fAngle; //角度
+
+	float fSize; //球のサイズ
+
+	BULLETOWNER Owner; //球の所有者
 
 	BULLETTYPE type; //種類
 
@@ -61,7 +76,7 @@ void DrawBullet(void);
 
 //設定
 
-void SetBullet(D3DXVECTOR3 pos, D3DXVECTOR3 move, int nLife, int nDamage, float fAngle, BULLETTYPE type);
+void SetBullet(D3DXVECTOR3 pos, D3DXVECTOR3 move, int nLife, int nDamage, float fAngle, float fSize, BULLETOWNER Owner, BULLETTYPE type);
 
 //当たり判定
 

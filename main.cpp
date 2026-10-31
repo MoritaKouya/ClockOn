@@ -1,6 +1,6 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
@@ -12,6 +12,8 @@
 #include "result.h"
 #include "fade.h"
 #include "sound.h"
+
+#include <time.h>
 
 //マクロ定義
 
@@ -52,6 +54,8 @@ int g_nCountFPS = 0; //ＦＰＳのカウンタ
 //======================================
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
+	srand((unsigned int)time(NULL));
+
 	WNDCLASSEX wcex =
 	{
 		sizeof(WNDCLASSEX), //WNDCLASSEXのメモリサイズ

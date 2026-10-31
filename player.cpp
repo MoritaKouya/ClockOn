@@ -1,6 +1,6 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
@@ -310,7 +310,7 @@ void UpdatePlayer(void)
 		}
 		//球の発射処理
 
-		ShootBallet(AngleAim);
+		ShootBullet(AngleAim);
 
 		//アイテムの当たり判定
 
@@ -539,7 +539,7 @@ void StatePlayer(void)
 //=========================
 // 球の発射処理
 //=========================
-void ShootBallet(float AngleAim)
+void ShootBullet(float AngleAim)
 {
 	g_player.nBulletCounter--; //球のカウンターを減らす
 
@@ -564,7 +564,12 @@ void ShootBallet(float AngleAim)
 
 				, AngleAim
 
-				, BULLETTYPE_PLAYER);
+				, 20.0f
+
+				, BULLETOWNER_PLAYER
+		
+				, BULLETTYPE_PLAYER
+				);
 
 			//バレットのカウンターを増やす
 

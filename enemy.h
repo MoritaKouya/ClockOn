@@ -1,6 +1,6 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
@@ -14,6 +14,12 @@
 #define MAX_ENEMY (32) //敵の最大数
 
 #define ENEMY_SIZE (40) //敵の中心からの対角線の長さ
+
+//マクロ定義
+
+#define MAX_CHARGECOUNTER (10 * 60) //チャージの時間
+
+#define CHARGEEFFECT_INTERVAL (MAX_CHARGECOUNTER / 40) //チャージエフェクトの生成間隔
 
 //敵の状態の列挙型定義
 
@@ -74,17 +80,17 @@ typedef struct
 
 	int nChargeCounter; //チャージのカウンター
 
+	int nPatternAnimEnemy; //アニメーションパターンNo
+
 	int nCountterAnimEnemy; //アニメーションカウンター
 
-	int nPatternAnimEnemy; //アニメーションパターンNo
+	int nAttackPattern; //攻撃パターン
 
 	float nAnglePlayer; //プレイヤーとの角度
 
 	bool bJump; //ジャンプできるかどうか
 
 	bool bRightMove; //向き(true;右向きfalse;左向き)
-
-	bool nAttack;
 
 	bool bUse; //使用しているかどうか
 }Enemy;
@@ -114,8 +120,6 @@ void AnimEnemy(int nCnt); //アニメーション
 void ActionEnemy(int nCnt); //関数呼び出し用
 
 void ActionType1(int nCnt); //行動パターン１
-
-void ActionType2(int nCnt); //行動パターン１
 
 void MoveEnemy(int nCnt); //敵の移動
 

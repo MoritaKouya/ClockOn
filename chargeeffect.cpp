@@ -1,6 +1,6 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
@@ -29,8 +29,6 @@ ChargeEffect g_ChargeEffect[MAX_CHARGEEFFECT];
 //==================================
 void InitChargeEffect(void)
 {
-	srand((unsigned int)time(NULL));
-
 	//各項目の初期化
 
 	for (int nCount = 0; nCount < MAX_CHARGEEFFECT; nCount++)

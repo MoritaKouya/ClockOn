@@ -1,12 +1,15 @@
 //=============================
 // 
-//アクションゲームプロトタイプ版
+//アクションゲームmaster版
 // Author森田煌也
 // 
 //=============================
 #include "enemy.h"
 
+#include "enemy_wand.h"
+
 #include "block.h"
+#include "bullet.h"
 #include "camera.h"
 #include "chargeeffect.h"
 #include "combo.h"
@@ -20,12 +23,8 @@
 #include "stoptime.h"
 
 #include <stdio.h>
-
-//マクロ定義
-
-#define MAX_CHARGECOUNTER (10 * 60) //チャージの時間
-
-#define CHARGEEFFECT_INTERVAL (MAX_CHARGECOUNTER / 40) //チャージエフェクトの生成間隔
+#include <stdlib.h>
+#include <time.h>
 
 //アニメーション
 
@@ -104,7 +103,9 @@ void InitEnemy(void)
 
 		g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンター
 
-		g_aEnemy[nCntEnemy].nCounterAction = 0;
+		g_aEnemy[nCntEnemy].nCounterAction = 0; //行動カウンター
+
+		g_aEnemy[nCntEnemy].nAttackPattern = 0; //攻撃パターン
 
 		g_aEnemy[nCntEnemy].bJump = true; //ジャンプできる状態にしておく
 
@@ -483,7 +484,7 @@ void ActionEnemy(int nCnt)
 
 	case ENEMYTYPE_2:
 
-		ActionType2(nCnt); //パターン２
+		ActionTypeWand(&g_aEnemy[nCnt]); //パターン２
 
 		break;
 
@@ -565,77 +566,6 @@ void ActionType1(int nCnt)
 	{
 		g_aEnemy[nCnt].move.x = 0;
 	}
-}
-
-//==================
-// 敵の行動パターン2
-//==================
-void ActionType2(int nCnt)
-{
-	g_aEnemy[nCnt].nCounterAction++; //行動カウンターをプラス
-
-	Player* pPlayer = GetPlayer();
-
-	if (0 <= g_aEnemy[nCnt].nCounterAction && g_aEnemy[nCnt].nCounterAction < 300)
-	{ //一段目の動き
-
-		//移動量の決定
-
-		if (pPlayer->pos.x <= g_aEnemy[nCnt].pos.x)
-		{ //プレイヤーが左にいるとき
-
-			g_aEnemy[nCnt].move.x = -3;
-		}
-		else
-		{ //プレイヤーが右にいるとき
-
-			g_aEnemy[nCnt].move.x = 3;
-		}
-	}
-	else if (300 == g_aEnemy[nCnt].nCounterAction) //カウンターが480を超えた場合
-	{ //二段目の動き
-
-		if (pPlayer->pos.y <= g_aEnemy[nCnt].pos.y)
-		{ //プレイヤーが上にいるとき
-
-			g_aEnemy[nCnt].move.y = -30; //ジャンプ
-		}
-		else if (g_aEnemy[nCnt].pos.y <= pPlayer->pos.y)
-		{ //プレイヤーが下にいるとき
-
-			g_aEnemy[nCnt].pos.y++; //足場を降りれるように
-		}
-
-		g_aEnemy[nCnt].move.x = 0; //しばらく制止する
-
-		
-	}
-	else if (360 == g_aEnemy[nCnt].nCounterAction)
-	{ //3段目の動き
-
-		//攻撃(後でパターン分けする)
-
-		//チャージのカウンターを設定
-
-		g_aEnemy[nCnt].nChargeCounter = MAX_CHARGECOUNTER;
-
-		//カウンターをリセット
-
-		g_aEnemy[nCnt].nCounterAction = 0;
-	}
-
-	//かくかくしないようにする
-
-	float distanceX = pPlayer->pos.x - g_aEnemy[nCnt].pos.x;
-
-	float threshold = 80.0f; // 位置を変えない距離
-
-	// プレイヤーと敵の距離が向きを変えない距離より離れている場合
-	if (fabsf(distanceX) < threshold)
-	{
-		g_aEnemy[nCnt].move.x = 0;
-	}
-
 }
 
 //==========================
