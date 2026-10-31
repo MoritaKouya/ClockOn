@@ -14,6 +14,9 @@
 //
 //#include "explosion.h"
 //
+
+#include "effect.h"
+
 #include "enemy.h"
 
 #include "itembox.h"
@@ -216,17 +219,13 @@ void UpdateBullet(void)
 
 			if (GetStopTime()->bStopTime == false)
 			{ //時間停止中じゃない場合
-
-			//移動
+			  
+			    //移動
 
 				MoveBullet(nCntBullet);
 
 				if (g_aBullet[nCntBullet].type == BULLETTYPE_PLAYER)
 				{//プレイヤーの球
-
-					////エフェクト
-
-					//SetEffect(g_aBullet[nCntBullet].pos, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.75f), 25.0f, 12);
 
 					//当たり判定
 
@@ -235,8 +234,6 @@ void UpdateBullet(void)
 					CollisionItemBox(&g_aBullet[nCntBullet]); //アイテムボックス
 
 					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
-
-					//CollisionBoss(&g_aBullet[nCntBullet]); //ボス
 				}
 				else if (g_aBullet[nCntBullet].type == BULLETTYPE_ENEMY)
 				{//敵の球
@@ -544,6 +541,10 @@ void CollisionBlock(Bullet* pBullet)
 
 				&& pBullet->pos.y <= pBlock->pos.y + pBlock->fHeight) //ブロックと弾が当たった
 			{
+				//ヒット音
+
+				PlaySound(SOUND_LABEL_SE_HIT001);
+
 				pBullet->bUse = false; //球を使用していない状態にする
 
 				break;

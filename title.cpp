@@ -189,7 +189,7 @@ void UpdateTitle(void)
 
 			//サウンド
 
-			PlaySound(SOUND_LABEL_SE_ENTER);
+			PlaySound(SOUND_LABEL_SE_ENTER); //決定ボタン
 
 			switch (int nSelect = GetTitleMenuSelect()) //0で開始1で終了
 			{

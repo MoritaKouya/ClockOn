@@ -16,9 +16,9 @@
 
 #define AIM_SIZE (40) //照準のサイズ
 
-#define AIM_SPEED (10) //照準のスピード
+#define AIM_SPEED (15) //照準のスピード
 
-#define DISTANCE_LOCKON (ENEMY_SIZE + 40) //ロックオンできる距離
+#define DISTANCE_LOCKON (ENEMY_SIZE + 80) //ロックオンできる距離
 
 //グローバル変数
 

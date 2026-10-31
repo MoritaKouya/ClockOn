@@ -30,9 +30,11 @@ typedef enum
 
 typedef enum
 {
-	ENEMYTYPE_0 = 0, //Œ•Ž‚¿
+	ENEMYTYPE_TUTORIAL = 0,
 
-	ENEMYTYPE_1,
+	ENEMYTYPE_1, //Œ•Ž‚¿
+
+	ENEMYTYPE_2,
 
 	ENEMYTYPE_MAX
 }ENEMYTYPE;

@@ -61,14 +61,22 @@ void UpdateResult(void)
 	{
 		SetGameResult();
 	}
+	else if (60 < nResultCounter)
+	{
+		if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_A) == true)
+		{ //決定キーが押された
 
-	if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_B) == true)
-	{ //決定キーが押された
+			//サウンド
 
-		//モード設定
+			PlaySound(SOUND_LABEL_SE_ENTER); //決定ボタン
 
-		SetFade(MODE_TITLE);
+			//モード設定
+
+			SetFade(MODE_TITLE);
+		}
 	}
+
+	
 
 	//各項目の更新
 

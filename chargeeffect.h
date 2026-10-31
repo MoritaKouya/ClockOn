@@ -23,6 +23,8 @@ typedef struct
 
 	float fSize; //サイズ
 
+	int nLife; //寿命
+
 	bool bUse; //使用しているかどうか
 }ChargeEffect;
 
@@ -42,6 +44,6 @@ void UpdateChargeEffect(void);
 
 //設定
 
-void SetChargeEffect(D3DXVECTOR3 pos, D3DXVECTOR3 EnemyPos, D3DXCOLOR col, float fSize);
+void SetChargeEffect(D3DXVECTOR3 posEnemy, D3DXCOLOR col, float fSize, float fDistance);
 
 #endif

@@ -120,7 +120,13 @@ void UpdateStopTime(void)
 
 				if (g_StopTime.nCounterStopTime % 60 == 0)
 				{
+					//SE
+
 					PlaySound(SOUND_LABEL_SE_CLOCK);
+
+					//ïbêîï\é¶
+
+					SetStopTimeCounter(g_StopTime.nCounterStopTime / 60);
 				}
 
 				if (STOP_TIME_FRAME == g_StopTime.nCounterStopTime)

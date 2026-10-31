@@ -477,7 +477,7 @@ void MovePlayer(void)
 				g_player.bDash = true;
 			}
 		}
-		else if (g_player.nDashCounter <= 20)
+		else if (g_player.nDashCounter <= 10)
 		{ //ダッシュ状態ではなくする
 			g_player.bDash = false;
 		}
@@ -626,6 +626,9 @@ void AnimPlayer(void)
 	}
 }
 
+//==================================
+// プレイヤーの足音処理
+//==================================
 void FootstepsPlayer(void)
 {
 	if (g_player.move.x < -1 || 1 < g_player.move.x)
@@ -832,6 +835,10 @@ void HitPlayer(HIT hit, int amount)
 
 			if (g_player.nCounterState == 0)
 			{
+				//ダメージ音
+
+				PlaySound(SOUND_LABEL_SE_DAMAGE);
+
 				//ダメージスクリーン
 
 				if (UseScreenEffect() == false)

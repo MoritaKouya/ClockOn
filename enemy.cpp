@@ -8,8 +8,11 @@
 
 #include "block.h"
 #include "camera.h"
+#include "chargeeffect.h"
 #include "combo.h"
+#include "enemyhp.h"
 #include "enemyweapon.h"
+#include "explosion.h"
 #include "item.h"
 #include "player.h"
 #include "scaffold.h"
@@ -22,7 +25,7 @@
 
 #define MAX_CHARGECOUNTER (10 * 60) //チャージの時間
 
-#define CHARGEEFFECT_INTERVAL (MAX_CHARGECOUNTER / 20) //チャージエフェクトの生成間隔
+#define CHARGEEFFECT_INTERVAL (MAX_CHARGECOUNTER / 40) //チャージエフェクトの生成間隔
 
 //アニメーション
 
@@ -48,6 +51,8 @@ int g_nNumEnemy; //敵の数を代入する変数,
 
 const char* g_aEnemyTexture_Path[ENEMYTYPE_MAX] =
 {
+	"Data/TEXTURE/ENEMY/enemy000.png",
+
 	"Data/TEXTURE/ENEMY/enemy000.png",
 
 	"Data/TEXTURE/ENEMY/enemy001.png",
@@ -91,7 +96,7 @@ void InitEnemy(void)
 
 		g_aEnemy[nCntEnemy].ScreenPos = D3DXVECTOR3(0.0f, 0.0f, 0.0f); //画面上の位置を初期化
 
-		g_aEnemy[nCntEnemy].EnemyInfo = g_aEnemyInfo[ENEMYTYPE_0]; //種類
+		g_aEnemy[nCntEnemy].EnemyInfo = g_aEnemyInfo[ENEMYTYPE_1]; //種類
 
 		g_aEnemy[nCntEnemy].state = ENEMYSTATE_NORMAL; //状態
 
@@ -200,7 +205,11 @@ void InitEnemy(void)
 
 	//各オブジェクトの初期化処理
 
+	InitEnemyHp(); //hp
+
 	InitEnemyWeapon(); //武器
+
+	InitChargeEffect(); //チャージエフェクト
 }
 
 //===================
@@ -273,7 +282,11 @@ void UninitEnemy(void)
 
 	//各オブジェクトの終了処理
 
+	UninitEnemyHp(); //hp
+
 	UninitEnemyWeapon(); //武器
+
+	UninitChargeEffect(); //チャージエフェクト
 }
 
 //===================
@@ -316,9 +329,9 @@ void UpdateEnemy(void)
 
 						float distanceX = pPlayer->pos.x - g_aEnemy[nCntEnemy].pos.x;
 
-						float threshold = 80.0f; // 向きを変えない距離の閾値（ドット数や座標系に合わせて調整）
+						float threshold = 80.0f; // 向きを変えない距離
 
-						// 閾値より離れているときだけ向きを更新する
+						//離れているときだけ向きを更新する
 						if (distanceX * distanceX > threshold * threshold)
 						{
 
@@ -332,15 +345,20 @@ void UpdateEnemy(void)
 							}
 						}
 
-						if (0 <= g_aEnemy[nCntEnemy].nChargeCounter)
-						{
-							ActionEnemy(nCntEnemy); //行動
+						//敵の行動
 
-							AnimEnemy(nCntEnemy); //アニメーション
+						if (0 < g_aEnemy[nCntEnemy].nChargeCounter)
+						{ //チャージカウンターが0じゃない場合
+							
+							Charge(nCntEnemy); // ここでエフェクトを呼ぶ
 						}
 						else
 						{
-							g_aEnemy[nCntEnemy].nChargeCounter--;
+							//アクション
+
+							ActionEnemy(nCntEnemy);
+
+							AnimEnemy(nCntEnemy);
 						}
 					}
 				}
@@ -397,7 +415,11 @@ void UpdateEnemy(void)
 
 	//各オブジェクトの更新処理
 
+	UpdateEnemyHp(); //hp
+
 	UpdateEnemyWeapon(); //武器
+
+	UpdateChargeEffect(); //チャージエフェクト
 }
 
 //==================
@@ -453,13 +475,13 @@ void ActionEnemy(int nCnt)
 {
 	switch (g_aEnemy[nCnt].EnemyInfo.type) //タイプ１と２
 	{
-	case ENEMYTYPE_0:
+	case ENEMYTYPE_1:
 
 		ActionType1(nCnt); //パターン１
 
 		break;
 
-	case ENEMYTYPE_1:
+	case ENEMYTYPE_2:
 
 		ActionType2(nCnt); //パターン２
 
@@ -493,31 +515,40 @@ void ActionType1(int nCnt)
 	Player* pPlayer = GetPlayer();
 
 	if (0 <= g_aEnemy[nCnt].nCounterAction && g_aEnemy[nCnt].nCounterAction < 300)
-	{
+	{ //一段階目のアクション
+
+		//移動量の決定
+
 		if (pPlayer->pos.x <= g_aEnemy[nCnt].pos.x)
-		{
+		{ //プレイヤーが左にいるとき
+
 			g_aEnemy[nCnt].move.x = -3;
 		}
 		else
-		{
+		{ //プレイヤーが右にいるとき
+
 			g_aEnemy[nCnt].move.x = 3;
 		}
 	}
 	else if (300 == g_aEnemy[nCnt].nCounterAction) //カウンターが480を超えた場合
-	{
+	{ //２段階目の動き
+
 		if (pPlayer->pos.y <= g_aEnemy[nCnt].pos.y)
-		{
-			g_aEnemy[nCnt].move.y = -30;
+		{ //プレイヤーが上にいるとき
+
+			g_aEnemy[nCnt].move.y = -30; //ジャンプ
 		}
 		else if (g_aEnemy[nCnt].pos.y <= pPlayer->pos.y)
-		{
-			g_aEnemy[nCnt].pos.y++;
+		{ //プレイヤーが下にいるとき
+
+			g_aEnemy[nCnt].pos.y++; //足場を降りれるように
 		}
 
-		g_aEnemy[nCnt].move.x = 0;
+		g_aEnemy[nCnt].move.x = 0; //しばらく制止する
 	}
 	else if (480 <= g_aEnemy[nCnt].nCounterAction)
-	{
+	{ //一定期間たった時
+
 		//行動カウンターをリセット
 
 		g_aEnemy[nCnt].nCounterAction = 0;
@@ -546,32 +577,49 @@ void ActionType2(int nCnt)
 	Player* pPlayer = GetPlayer();
 
 	if (0 <= g_aEnemy[nCnt].nCounterAction && g_aEnemy[nCnt].nCounterAction < 300)
-	{
+	{ //一段目の動き
+
+		//移動量の決定
+
 		if (pPlayer->pos.x <= g_aEnemy[nCnt].pos.x)
-		{
+		{ //プレイヤーが左にいるとき
+
 			g_aEnemy[nCnt].move.x = -3;
 		}
 		else
-		{
+		{ //プレイヤーが右にいるとき
+
 			g_aEnemy[nCnt].move.x = 3;
 		}
 	}
 	else if (300 == g_aEnemy[nCnt].nCounterAction) //カウンターが480を超えた場合
-	{
+	{ //二段目の動き
+
 		if (pPlayer->pos.y <= g_aEnemy[nCnt].pos.y)
-		{
-			g_aEnemy[nCnt].move.y = -30;
+		{ //プレイヤーが上にいるとき
+
+			g_aEnemy[nCnt].move.y = -30; //ジャンプ
 		}
 		else if (g_aEnemy[nCnt].pos.y <= pPlayer->pos.y)
-		{
-			g_aEnemy[nCnt].pos.y++;
+		{ //プレイヤーが下にいるとき
+
+			g_aEnemy[nCnt].pos.y++; //足場を降りれるように
 		}
 
-		g_aEnemy[nCnt].move.x = 0;
+		g_aEnemy[nCnt].move.x = 0; //しばらく制止する
+
+		
 	}
-	else if (480 <= g_aEnemy[nCnt].nCounterAction)
-	{
-		//行動カウンターをリセット
+	else if (360 == g_aEnemy[nCnt].nCounterAction)
+	{ //3段目の動き
+
+		//攻撃(後でパターン分けする)
+
+		//チャージのカウンターを設定
+
+		g_aEnemy[nCnt].nChargeCounter = MAX_CHARGECOUNTER;
+
+		//カウンターをリセット
 
 		g_aEnemy[nCnt].nCounterAction = 0;
 	}
@@ -585,11 +633,8 @@ void ActionType2(int nCnt)
 	// プレイヤーと敵の距離が向きを変えない距離より離れている場合
 	if (fabsf(distanceX) < threshold)
 	{
-		//チャージのカウンターを設定
-
-		g_aEnemy[nCnt].nChargeCounter = MAX_CHARGECOUNTER;
+		g_aEnemy[nCnt].move.x = 0;
 	}
-
 
 }
 
@@ -617,7 +662,6 @@ void MoveEnemy(int nCnt)
 	g_aEnemy[nCnt].ScreenPos.x += g_aEnemy[nCnt].move.x;
 
 	g_aEnemy[nCnt].ScreenPos.y += g_aEnemy[nCnt].move.y;
-
 
 
 	g_aEnemy[nCnt].bJump = CollisionBlock(&g_aEnemy[nCnt].pos, &g_aEnemy[nCnt].posOld, &g_aEnemy[nCnt].move,
@@ -670,7 +714,24 @@ void AnimEnemy(int nCnt)
 //===================
 void Charge(int nCnt)
 {
+	//チャージカウントを減らす
+
+	g_aEnemy[nCnt].nChargeCounter--;
+
 	//ランダムで３２方向からチャージエフェクトを出す(D3DX_PI / 32 * rand)
+
+	if (g_aEnemy[nCnt].nChargeCounter % CHARGEEFFECT_INTERVAL == 0)
+	{
+		//位置を敵の中心にそろえる
+
+		D3DXVECTOR3 pos;
+
+		pos = D3DXVECTOR3(g_aEnemy[nCnt].pos.x, g_aEnemy[nCnt].pos.y - ENEMY_SIZE, g_aEnemy[nCnt].pos.z);
+
+		//チャージエフェクトの設定
+
+		SetChargeEffect(pos, D3DXCOLOR(1.0f, 0.0f, 1.0f, 1.0f), 25.0f, ENEMY_SIZE * 2);
+	}
 }
 
 //===================
@@ -719,6 +780,8 @@ void DrawEnemy(void)
 	}
 
 	//各オブジェクトの描画処理
+
+	DrawEnemyHp(); //hp
 
 	DrawEnemyWeapon(); //武器
 }
@@ -795,6 +858,10 @@ void SetEnemy(D3DXVECTOR3 pos, int type)
 
 			g_nNumEnemy++;
 
+			//各項目の設定
+
+			SetEnemyHp(g_aEnemy[nCntEnemy].pos, g_aEnemy[nCntEnemy].EnemyInfo.nLife); //hp
+
 			SetEnemyWeapon(g_aEnemy[nCntEnemy].pos, g_aEnemy[nCntEnemy].EnemyInfo.nWeapon);
 
 			break;
@@ -823,6 +890,10 @@ void HitEnemy(int nCntEnemy, int nDamage)
 
 	if (g_aEnemy[nCntEnemy].EnemyInfo.nLife <= 0) //敵の体力がなくなった
 	{
+		//爆発
+
+		SetExplosion(D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x, g_aEnemy[nCntEnemy].pos.y - ENEMY_SIZE, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+
 		g_aEnemy[nCntEnemy].bUse = false; //敵を使用していない状態にする
 
 		g_nNumEnemy--; //敵の総数を減らす

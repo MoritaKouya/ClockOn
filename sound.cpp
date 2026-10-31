@@ -53,8 +53,10 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 	{"Data/SE/enter.wav", 0},      // 時計のSE
 
 	{"Data/SE/shot000.wav", 0},			// 弾発射音
-	{"Data/SE/hit000.wav", 0},			// 被弾音
-	{"Data/SE/hit001.wav", 0},			// 被弾音
+	{"Data/SE/hit000.wav", 0},			// 敵被弾音
+	{"Data/SE/hit001.wav", 0},			// 床被弾音
+	{"Data/SE/explosion000.wav", 0},    // 爆発音
+	{"Data/SE/damage.wav", 0},          //ダメージ音
 
 	//プレイヤー
 

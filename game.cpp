@@ -17,6 +17,7 @@
 #include "combo.h"
 #include "effect.h"
 #include "enemy.h"
+#include "explosion.h"
 #include "fade.h"
 #include "goal.h"
 #include "guide.h"
@@ -89,8 +90,6 @@ void InitGame(void)
 
 	if (*g_pStage == STAGE_1_0)
 	{ //1-0の場合
-
-		
 
 		//デバイスの取得
 
@@ -170,6 +169,10 @@ void InitGame(void)
 	//キラキラ
 
 	InitSparkle();
+
+	//爆発
+
+	InitExplosion();
 
 	//エフェクト
 
@@ -372,6 +375,10 @@ void UninitGame(void)
 
 	UninitSparkle();
 
+	//爆発
+
+	UninitExplosion();
+
 	//エフェクト
 
 	UninitEffect();
@@ -456,6 +463,10 @@ void UpdateGame(void)
 
 	UpdateSparkle();
 
+	//爆発
+
+	UpdateExplosion();
+
 	//エフェクト
 
 	UpdateEffect();
@@ -522,14 +533,9 @@ void DrawGame(void)
 
 	DrawBullet();
 
-	//エフェクト
+	//爆発
 
-	DrawEffect();
-
-
-	//キラキラ
-
-	DrawSparkle();
+	DrawExplosion();
 
 	//敵
 
@@ -540,6 +546,14 @@ void DrawGame(void)
 	DrawPlayerEffect(); //プレイヤーのエフェクト
 
 	DrawPlayer(); //プレイヤー
+
+	//エフェクト
+
+	DrawEffect();
+
+	//キラキラ
+
+	DrawSparkle();
 
 	//時計
 

@@ -11,6 +11,7 @@
 #include "scaffold.h"
 #include "sound.h"
 #include "stoptime.h"
+#include "stoptimecounter.h"
 
 //グローバル変数
 
@@ -433,15 +434,13 @@ void SetItem(D3DXVECTOR3 pos, D3DXVECTOR3 move, ITEMTYPE type)
 //==================================
 void HitItem(Item* pItem)
 {
+	PlaySound(SOUND_LABEL_SE_ITEM);
+
 	pItem->bUse = false; //アイテムを使用していない状態にする
 
 	switch (pItem->type) //タイプごとに比較
 	{
 	case ITEMTYPE_00: //時計の場合
-
-		//サウンド
-
-		PlaySound(SOUND_LABEL_SE_CLOCK);
 
 		HitItemTimer(); //時計の処理
 		
@@ -450,17 +449,25 @@ void HitItem(Item* pItem)
 }
 
 //==================================
-// アイテムのヒット処理
+// タイマーのヒット処理
 //==================================
 void HitItemTimer(void)
 {
-	PlaySound(SOUND_LABEL_SE_ITEM);
+	
+
+	//サウンド
+
+	PlaySound(SOUND_LABEL_SE_CLOCK);
 
 	StopTime* pStopTime = GetStopTime(); //時間停止の情報のポインタを獲得
 
 	pStopTime->nCounterStopTime = STOP_TIME_FRAME; //時間停止のカウンターを最大数にリセット
 
 	pStopTime->bStopTimeFlag = true; //時間停止を使用できるようにする
+	
+	//秒数表示
+
+	SetStopTimeCounter(pStopTime->nCounterStopTime);
 }
 
 //==================================

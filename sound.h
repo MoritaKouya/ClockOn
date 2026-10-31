@@ -31,6 +31,8 @@ typedef enum
 
 	SOUND_LABEL_SE_HIT000,      // ヒット音（敵）
 	SOUND_LABEL_SE_HIT001,      // ヒット音（床）
+	SOUND_LABEL_SE_EXPLOSION,   //爆発音
+	SOUND_LABEL_SE_DAMAGE,      //ダメージ音
 	
 	SOUND_LABEL_SE_DASH,        // ダッシュ
 	SOUND_LABEL_SE_AVOIDANCE,   // 回避音
