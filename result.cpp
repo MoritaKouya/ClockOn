@@ -10,7 +10,18 @@
 #include "input.h"
 #include "fade.h"
 #include "gameresult.h"
+#include "pressenter.h"
+#include "selectstage.h"
 #include "sound.h"
+#include "timer.h"
+
+//マクロ定義
+
+#define OUTPUT_GAMERESULT (60) //ゲームリザルトが表示されるまでのフレーム
+
+#define OUTPUT_TIMER (120) //タイマーが表示されるまでのフレーム
+
+#define RESULT_ENTER (180) //決定ボタンが押せるようになるまでのフレーム
 
 //グローバル変数
 
@@ -34,6 +45,14 @@ void InitResult(void)
 	InitBg(); //背景
 
 	InitGameResult(); //ゲームリザルト
+
+	if (*GetSelectStage() != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+
+		InitTimer(); //タイマー
+	}
+
+	InitPressEnter(); //プレスエンター
 }
 
 //==================================
@@ -48,6 +67,14 @@ void UninitResult(void)
 	UninitBg(); //背景
 
 	UninitGameResult(); //ゲームリザルト
+
+	if (*GetSelectStage() != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+	
+		UninitTimer(); //タイマー
+	}
+
+	UninitPressEnter(); //プレスエンター
 }
 
 //==================================
@@ -57,12 +84,28 @@ void UpdateResult(void)
 {
 	nResultCounter++;
 
-	if (nResultCounter == 60)
-	{
+	if (nResultCounter == OUTPUT_GAMERESULT)
+	{ //ゲームリザルトの表示
+
 		SetGameResult();
 	}
-	else if (60 < nResultCounter)
-	{
+	else if (nResultCounter == OUTPUT_TIMER && *GetSelectStage() != STAGE_1_0)
+	{ //タイマーの表示
+
+		bool* bStartTimer = GetStartTimer();
+
+		*bStartTimer = true;
+
+	}
+	else if (RESULT_ENTER == nResultCounter)
+	{ //プレスエンターの文字を表示
+
+		SetPressEnter(D3DXVECTOR3(SCREEN_WIDTH / 2,SCREEN_HEIGHT / 4 * 3 ,0.0f), 260.0f, 50.0f);
+
+	}
+	else if (RESULT_ENTER < nResultCounter)
+	{ //決定ボタンが押せるようになる
+
 		if (GetKeyboardTrigger(DIK_RETURN) == true || GetJoypadTrigger(JOYKEY_A) == true)
 		{ //決定キーが押された
 
@@ -74,13 +117,14 @@ void UpdateResult(void)
 
 			SetFade(MODE_TITLE);
 		}
-	}
-
 	
+	}
 
 	//各項目の更新
 
-	UpdateGameResult();
+	UpdateGameResult(); //ゲームリザルト
+
+	UpdatePressEnter(); //プレスエンター
 }
 
 //==================================
@@ -92,5 +136,13 @@ void DrawResult(void)
 
 	DrawBg(); //背景
 
-	DrawGameResult();
+	DrawGameResult(); //ゲームリザルト
+
+	if (*GetSelectStage() != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+
+		DrawTimer(); //タイマー
+	}
+
+	DrawPressEnter(); //プレスエンター
 }

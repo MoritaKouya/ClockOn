@@ -132,7 +132,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	//‰Šú‰»ˆ—
 
-	if (FAILED(Init(hInstance, hWnd, TRUE))) //‰Šú‰»ˆ—‚ª¸”s‚µ‚½ê‡
+	if (FAILED(Init(hInstance, hWnd, FALSE))) //‰Šú‰»ˆ—‚ª¸”s‚µ‚½ê‡
 	{
 		return -1;
 	}

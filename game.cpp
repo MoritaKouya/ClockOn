@@ -32,6 +32,7 @@
 #include "sparkle.h"
 #include "stoptime.h"
 #include "stoptime_playereffect.h"
+#include "timer.h"
 #include "player.h"
 #include "playereffect.h"
 
@@ -191,6 +192,14 @@ void InitGame(void)
 	InitPlayerEffect(); //プレイヤーのエフェクト
 
 	InitCamera(); //カメラ
+
+	//タイマー
+
+	if (*g_pStage != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+
+		InitTimer();
+	}
 }
 
 //=============================
@@ -395,6 +404,14 @@ void UninitGame(void)
 
 	UninitItemBox();
 
+	//タイマー
+
+	if (*g_pStage != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+
+		UninitTimer();
+	}
+
 	//背景
 
 	UninitBg();
@@ -488,6 +505,14 @@ void UpdateGame(void)
 	//背景
 
 	UpdateBg();
+
+	//タイマー
+
+	if (*g_pStage != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+
+		UpdateTimer();
+	}
 }
 
 //==================================
@@ -574,6 +599,12 @@ void DrawGame(void)
 
 	DrawCombo();
 
+	if (*g_pStage != STAGE_1_0)
+	{ //チュートリアルステージじゃない場合
+		//タイマー
+
+		DrawTimer();
+	}
 	//照準
 
 	DrawAim();
