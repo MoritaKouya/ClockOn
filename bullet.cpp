@@ -21,9 +21,9 @@
 
 #include "itembox.h"
 
-//
-//#include "player.h"
-//
+
+#include "player.h"
+
 //#include "effect.h"
 //
 //#include "boss.h"
@@ -50,7 +50,11 @@ const char* g_aBulletTexture_Path[BULLETTYPE_MAX] =
 {
 	"Data/TEXTURE/BULLET/bullet000.png", //プレイヤーの弾
 
-	"Data/TEXTURE/BULLET/bullet001.png",
+	"Data/TEXTURE/BULLET/bullet001.png", //火の玉
+
+	"Data/TEXTURE/BULLET/bullet002.png", //光の弾
+
+	"Data/TEXTURE/BULLET/bullet003.png", //氷の弾
 }; //テクスチャの相対パスの構造体
 
 //================
@@ -240,6 +244,8 @@ void UpdateBullet(void)
 
 				MoveBullet(nCntBullet);
 
+				//当たり判定
+
 				if (g_aBullet[nCntBullet].Owner == BULLETOWNER_PLAYER)
 				{//プレイヤーの球
 
@@ -249,19 +255,57 @@ void UpdateBullet(void)
 
 					CollisionItemBox(&g_aBullet[nCntBullet]); //アイテムボックス
 
-					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
+				
 				}
-				else if (g_aBullet[nCntBullet].Owner == BULLETOWNER_ENEMY)
-				{//敵の球
+				else if(g_aBullet[nCntBullet].Owner == BULLETOWNER_ENEMY)
+				{ //敵の弾の場合
+
+					//プレイヤーとの当たり判定
+
+					CollisionPlayer(&g_aBullet[nCntBullet]);
+
+				}
+
+				//ブロックの当たり判定(共通)
+				
+				CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
 
 					//エフェクト
 
+				switch (g_aBullet[nCntBullet].type)
+				{
+				case BULLETTYPE_PLAYER: //プレイヤーの弾の場合
+
+					//なし
+
+					break;
+
+				case BULLETTYPE_FIRE: //火の玉の場合
+
+					//赤いエフェクト
+
 					SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f), g_aBullet[nCntBullet].fSize, 60.0f, false);
 
-					//当たり判定
+					break;
 
-					//CollisionPlayer(&g_aBullet[nCntBullet]); //プレイヤー
+				case BULLETTYPE_LIGHT: //光の弾の場合
+
+					//黄色のエフェクト
+
+					SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(1.0f, 1.0f, 0.0f, 1.0f), g_aBullet[nCntBullet].fSize, 60.0f, false);
+
+
+					break;
+
+				case BULLETTYPE_ICE: //氷の弾の場合
+
+					//青い色のエフェクト
+
+					SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(0.75f, 0.92f, 1.0f, 1.0f), g_aBullet[nCntBullet].fSize, 60.0f, false);
+
+					break;
 				}
+
 			}
 
 
@@ -563,72 +607,29 @@ void CollisionBlock(Bullet* pBullet)
 	}
 }
 
-////==================
-//// ボスとの当たり判定
-////==================
-//void CollisionBoss(Bullet* pBullet)
-//{
-//	//ボスの取得
-//
-//	BOSS* pBoss = GetBoss(); //ボスの情報が代入される
-//
-//	Player* pPlayer = GetPlayer();
-//
-//	//中心座標の距離（ｘ、ｙ）
-//
-//	float fDistance_x = pBoss->pos.x - pBullet->pos.x, //距離ｘ
-//
-//		fDistance_y = pBoss->pos.y - pBullet->pos.y; //距離y
-//
-//	//二つの中心中心座標の距離の2乗
-//
-//	float fDistanceSquared = (fDistance_x * fDistance_x) + (fDistance_y * fDistance_y);
-//
-//	//２つの円の半径の合計
-//
-//	float fTotalRadius = (BOSS_COLLISION + BULLET_SIZE); //半径の合計の長さ
-//
-//	if (fDistanceSquared <= fTotalRadius * fTotalRadius) //半径の合計の２乗より距離の２乗が小さい場合
-//	{//敵とプレイヤーが当たった
-//
-//		//サウンド
-//
-//		PlaySound(SOUND_LABEL_SE_HIT000);
-//
-//		HitBoss(pPlayer->nAttack); //ボスのヒット処理
-//
-//		pBullet->bUse = false; //球を使用していない状態にする
-//	}
-//}
-//
-////==================
-//// プレイヤーとの当たり判定
-////==================
-//void CollisionPlayer(Bullet* pBullet)
-//{
-//	//プレイヤーの取得
-//
-//	Player* pPlayer = GetPlayer(); //プレイヤーの情報が代入される
-//
-//	//中心座標の距離（ｘ、ｙ）
-//
-//	float fDistance_x = pPlayer->pos.x - pBullet->pos.x, //距離ｘ
-//
-//		fDistance_y = pPlayer->pos.y - pBullet->pos.y; //距離y
-//
-//	//二つの中心中心座標の距離の2乗
-//
-//	float fDistanceSquared = (fDistance_x * fDistance_x) + (fDistance_y * fDistance_y);
-//
-//	//２つの円の半径の合計
-//
-//	float fTotalRadius = (PLAYER_SIZE + BULLET_SIZE); //半径の合計の長さ
-//
-//	if (fDistanceSquared <= fTotalRadius * fTotalRadius) //半径の合計の２乗より距離の２乗が小さい場合
-//	{//敵とプレイヤーが当たった
-//
-//		HitPlayer(HIT_ENEMY, pBullet->nDamage); //プレイヤーのヒット処理
-//
-//		pBullet->bUse = false; //球を使用していない状態にする
-//	}
-//}
+//==================
+// プレイヤーとの当たり判定
+//==================
+void CollisionPlayer(Bullet* pBullet)
+{
+	//プレイヤーの取得
+
+	Player* pPlayer = GetPlayer();
+
+	if (pPlayer->pos.x - pPlayer->fWidth <= pBullet->pos.x + pBullet->fSize
+
+		&& pBullet->pos.x - pBullet->fSize <= pPlayer->pos.x + pPlayer->fWidth
+
+		&& pPlayer->pos.y - pPlayer->fHeight <= pBullet->pos.y + pBullet->fSize
+
+		&& pBullet->pos.y - pBullet->fSize <= pPlayer->pos.y) //ブロックと弾が当たった
+	{
+		//ヒット音
+
+		PlaySound(SOUND_LABEL_SE_HIT000);
+
+		HitPlayer(HIT_ENEMY, pBullet->nDamage);
+
+		pBullet->bUse = false; //球を使用していない状態にする
+	}
+}

@@ -9,6 +9,7 @@
 #include "enemy_wand.h"
 
 #include "block.h"
+#include "breaktext.h"
 #include "bullet.h"
 #include "camera.h"
 #include "chargeeffect.h"
@@ -103,6 +104,8 @@ void InitEnemy(void)
 
 		g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンター
 
+		g_aEnemy[nCntEnemy].nChargeBreakCounter = 0; //チャージブレイクのカウンター
+
 		g_aEnemy[nCntEnemy].nCounterAction = 0; //行動カウンター
 
 		g_aEnemy[nCntEnemy].nAttackPattern = 0; //攻撃パターン
@@ -110,6 +113,8 @@ void InitEnemy(void)
 		g_aEnemy[nCntEnemy].bJump = true; //ジャンプできる状態にしておく
 
 		g_aEnemy[nCntEnemy].bRightMove = false; //左向きにしておく
+
+		g_aEnemy[nCntEnemy].bChargeBreak = false; //チャージブレイクしていない状態にする
 
 		g_aEnemy[nCntEnemy].bUse = false; //使用していない状態にする
 	}
@@ -211,6 +216,8 @@ void InitEnemy(void)
 	InitEnemyWeapon(); //武器
 
 	InitChargeEffect(); //チャージエフェクト
+
+	InitBreakText(); //ブレイクの文字
 }
 
 //===================
@@ -246,6 +253,8 @@ void LoadEnemy(void)
 
 			(void)fscanf(pFile, "%d%*[,]", &g_aEnemyInfo[nType].nLife); //ライフ
 			
+			g_aEnemyInfo[nType].nMaxLife = g_aEnemyInfo[nType].nLife; //最大hp
+
 			(void)fscanf(pFile, "%f%*[,]", &g_aEnemyInfo[nType].fSpeed); //スピード
 		}
 
@@ -288,6 +297,8 @@ void UninitEnemy(void)
 	UninitEnemyWeapon(); //武器
 
 	UninitChargeEffect(); //チャージエフェクト
+
+	UninitBreakText(); //ブレイクの文字
 }
 
 //===================
@@ -421,6 +432,8 @@ void UpdateEnemy(void)
 	UpdateEnemyWeapon(); //武器
 
 	UpdateChargeEffect(); //チャージエフェクト
+
+	UpdateBreakText(); //ブレイクの文字
 }
 
 //==================
@@ -714,6 +727,8 @@ void DrawEnemy(void)
 	DrawEnemyHp(); //hp
 
 	DrawEnemyWeapon(); //武器
+
+	DrawBreakText(); //ブレイクの文字
 }
 
 //===================
@@ -814,47 +829,80 @@ void HitEnemy(int nCntEnemy, int nDamage)
 
 	AddCombo();
 
-	//ライフを減らす
-	
-	g_aEnemy[nCntEnemy].EnemyInfo.nLife -= nDamage;
+	if (g_aEnemy[nCntEnemy].nChargeBreakCounter <= 0)
+	{ //チャージブレイクカウンターがゼロの場合
 
-	if (g_aEnemy[nCntEnemy].EnemyInfo.nLife <= 0) //敵の体力がなくなった
-	{
-		//爆発
+		//ライフを減らす
 
-		SetExplosion(D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x, g_aEnemy[nCntEnemy].pos.y - ENEMY_SIZE, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+		g_aEnemy[nCntEnemy].EnemyInfo.nLife -= nDamage;
 
-		g_aEnemy[nCntEnemy].bUse = false; //敵を使用していない状態にする
+		if (g_aEnemy[nCntEnemy].EnemyInfo.nLife <= 0) //敵の体力がなくなった
+		{
+			//爆発
 
-		g_nNumEnemy--; //敵の総数を減らす
+			SetExplosion(D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x, g_aEnemy[nCntEnemy].pos.y - ENEMY_SIZE, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+
+			g_aEnemy[nCntEnemy].bUse = false; //敵を使用していない状態にする
+
+			g_nNumEnemy--; //敵の総数を減らす
+		}
+		else
+		{
+			//ダメージ
+
+			g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE; //ダメージを与える
+
+			g_aEnemy[nCntEnemy].nCounterState = 5; //状態カウンターを設定
+
+			VERTEX_2D* pVtx; //forの前でロック、後でアンロック
+
+		//頂点バッファをロックし、頂点データへのポインタを取得
+
+			g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
+
+			//頂点カラーの設定
+
+			pVtx += nCntEnemy * 4; //頂点データへのポインタを敵に合わせる
+
+			pVtx[0].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+
+			pVtx[1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+
+			pVtx[2].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+
+			pVtx[3].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+
+			g_pVtxBuffEnemy->Unlock();
+		}
 	}
- 	else
-	{
-		//ダメージ
+	else
+	{ //チャージブレイクカウンターが１以上の時
 
-		g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE; //ダメージを与える
+		g_aEnemy[nCntEnemy].nChargeBreakCounter--;
 
-		g_aEnemy[nCntEnemy].nCounterState = 5; //状態カウンターを設定
+		if (g_aEnemy[nCntEnemy].nChargeBreakCounter <= 0)
+		{ //チャージブレイクのカウンターがゼロになった場合
 
-		VERTEX_2D* pVtx; //forの前でロック、後でアンロック
+			g_aEnemy[nCntEnemy].bChargeBreak = true; //チャージブレイク状態にする
 
-	//頂点バッファをロックし、頂点データへのポインタを取得
+			g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンターをリセット
 
-		g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
+			//時計のアイテムが飛び出す
 
-		//頂点カラーの設定
+			SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(20.0f, -30.0f, 0.0f), ITEMTYPE_00);
 
-		pVtx += nCntEnemy * 4; //頂点データへのポインタを敵に合わせる
+			SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(-20.0f, -30.0f, 0.0f), ITEMTYPE_00);
 
-		pVtx[0].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+			//ブレイクの文字を表示する
 
-		pVtx[1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+			//位置の調整
 
-		pVtx[2].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+			D3DXVECTOR3 pos = g_aEnemy[nCntEnemy].pos;
 
-		pVtx[3].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+			pos.x -= ENEMY_SIZE;
 
-		g_pVtxBuffEnemy->Unlock();
+			SetBreakText(pos, ENEMY_SIZE, ENEMY_SIZE);
+		}
 	}
 }
 //==================
@@ -897,18 +945,18 @@ Enemy* GetEnemy(void)
 //===================
 // プレイヤーとの角度計算
 //===================
-//float CalcAngle(D3DXVECTOR3 ppos)
-//{
-//	//Player* pPlayer = GetPlayer(); //プレイヤーの情報
-//
-//	//float dx = pPlayer->pos.x - ppos.x; //x座標の差
-//
-//	//float dy = pPlayer->pos.y - ppos.y; //y座標の差
-//
-//	//float angle = (float)atan2(dy, dx); //角度
-//
-//	//return angle; //角度を返す
-//}
+float CalcAnglePlayer(D3DXVECTOR3 ppos)
+{
+	Player* pPlayer = GetPlayer(); //プレイヤーの情報
+
+	float dx = pPlayer->pos.x - ppos.x; //x座標の差
+
+	float dy = pPlayer->pos.y - ppos.y; //y座標の差
+
+	float angle = (float)atan2(dy, dx); //角度
+
+	return angle; //角度を返す
+}
 
 //===================
 // 敵の総数取得処理

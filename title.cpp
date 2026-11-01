@@ -202,8 +202,6 @@ void UpdateTitle(void)
 
 			case 1: //終了
 
-				UninitTitle();
-
 				//WM_QULTメッセージを送る
 
 				PostQuitMessage(0);
@@ -214,8 +212,6 @@ void UpdateTitle(void)
 		}
 
 		//各オブジェクトの更新処理
-
-		UpdateBg(); //Bg
 
 		UpdateTitleMenu(); //タイトルメニュー
 

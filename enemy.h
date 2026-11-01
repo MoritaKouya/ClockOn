@@ -55,6 +55,8 @@ typedef struct
 
 	int nLife; //体力
 
+	int nMaxLife; //最大体力
+
 	float fSpeed; //移動速度
 }EnemyInfo;
 
@@ -80,6 +82,8 @@ typedef struct
 
 	int nChargeCounter; //チャージのカウンター
 
+	int nChargeBreakCounter; //チャージブレイクのカウンター
+
 	int nPatternAnimEnemy; //アニメーションパターンNo
 
 	int nCountterAnimEnemy; //アニメーションカウンター
@@ -91,6 +95,8 @@ typedef struct
 	bool bJump; //ジャンプできるかどうか
 
 	bool bRightMove; //向き(true;右向きfalse;左向き)
+
+	bool bChargeBreak; //チャージブレイクかどうか
 
 	bool bUse; //使用しているかどうか
 }Enemy;
@@ -145,7 +151,7 @@ void CollisionPlayer(Enemy* Enemy); //プレイヤーとの当たり判定
 
 Enemy* GetEnemy(void); //敵の情報の取得
 
-float CalcAngle(D3DXVECTOR3 ppos); //プレイヤーとの角度計算
+float CalcAnglePlayer(D3DXVECTOR3 ppos); //プレイヤーとの角度計算
 
 int GetNumEnemy(void); //敵の数の取得
 

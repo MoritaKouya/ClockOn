@@ -26,6 +26,10 @@ typedef enum
 
 	BULLETTYPE_FIRE,       //火の玉
 
+	BULLETTYPE_LIGHT,      //光の弾
+
+	BULLETTYPE_ICE,        //氷の弾
+
 	BULLETTYPE_MAX         //最大数
 }BULLETTYPE;
 
@@ -85,9 +89,7 @@ void CollisionEnemy(Bullet* pBullet); //敵の当たり判定
 void CollisionItemBox(Bullet* pBullet); //ブロックの当たり判定
 
 void CollisionBlock(Bullet* pBullet); //ブロックの当たり判定
-//
-//void CollisionBoss(Bullet* pBullet); //ボスの当たり判定
-//
-//void CollisionPlayer(Bullet* pBullet); //プレイヤーの当たり判定
+
+void CollisionPlayer(Bullet* pBullet); //プレイヤーの当たり判定
 
 #endif

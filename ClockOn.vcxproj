@@ -150,6 +150,7 @@
     <ClCompile Include="aim.cpp" />
     <ClCompile Include="bg.cpp" />
     <ClCompile Include="block.cpp" />
+    <ClCompile Include="breaktext.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="chargeeffect.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="aim.h" />
     <ClInclude Include="bg.h" />
     <ClInclude Include="block.h" />
+    <ClInclude Include="breaktext.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="chargeeffect.h" />
