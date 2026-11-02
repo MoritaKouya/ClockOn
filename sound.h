@@ -33,6 +33,7 @@ typedef enum
 	SOUND_LABEL_SE_HIT001,      // ヒット音（床）
 	SOUND_LABEL_SE_EXPLOSION,   //爆発音
 	SOUND_LABEL_SE_DAMAGE,      //ダメージ音
+	SOUND_LABEL_SE_BREAK,       //チャージブレイク
 	
 	SOUND_LABEL_SE_DASH,        // ダッシュ
 	SOUND_LABEL_SE_AVOIDANCE,   // 回避音
@@ -43,9 +44,19 @@ typedef enum
 	SOUND_LABEL_SE_ITEM,        //アイテム
 	SOUND_LABEL_SE_ITEMBOX,     //アイテムボックス
 
+	//杖持ちの敵
+
+	SOUND_LABEL_SE_INSPIRATION, //攻撃開始時の音
+
+	SOUND_LABEL_SE_FIRE,        //火の弾
+
+	SOUND_LABEL_SE_LIGHT,       //光の弾
+
+	SOUND_LABEL_SE_ICE,         //氷の弾
+
 	SOUND_LABEL_SE_GOAL,        //ゴール
 
-	SOUND_LABEL_SE_GAMERESULT,  //ゲームリザルト
+	SOUND_LABEL_SE_RESULT,  //ゲームリザルト
 
 	SOUND_LABEL_MAX,
 } SOUND_LABEL;

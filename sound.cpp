@@ -57,6 +57,7 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 	{"Data/SE/hit001.wav", 0},			// 床被弾音
 	{"Data/SE/explosion000.wav", 0},    // 爆発音
 	{"Data/SE/damage.wav", 0},          //ダメージ音
+	{"Data/SE/break.wav", 0},           //チャージブレイク音
 
 	//プレイヤー
 
@@ -71,6 +72,16 @@ SOUNDINFO g_aSoundInfo[SOUND_LABEL_MAX] =
 
 	{"Data/SE/item.wav", 0},
 	{"Data/SE/itembox.wav", 0},         //アイテムボックス
+
+	//杖持ちの敵
+
+	{"Data/SE/Inspiration.wav", 0},     //攻撃開始時の音
+
+	{"Data/SE/fire.wav", 0},            //火の球
+
+	{"Data/SE/light.wav", 0},           //光の弾
+
+	{"Data/SE/ice.wav", 0},             //氷の弾
 
 	//ゴール
 

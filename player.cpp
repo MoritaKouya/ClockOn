@@ -16,6 +16,7 @@
 #include "aim.h"
 #include "block.h"
 #include "laser.h"
+#include "life_count.h"
 #include "lockonaim.h"
 #include "playereffect.h"
 #include "scaffold.h"
@@ -809,22 +810,22 @@ Player* GetPlayer(void)
 //===================
 void HitPlayer(HIT hit, int amount)
 {
-	switch (hit)
+	if (g_player.nCounterState <= 0)
 	{
-	case HIT_BULLET: //球の場合
 
-		break;
-
-	case HIT_ENEMY: //敵の場合
-
-		//ダッシュしているか
-
-		if (g_player.bDash == true)
+		switch (hit)
 		{
-			//ダッシュスクリーン
+		case HIT_BULLET: //球の場合
 
-			if (UseScreenEffect() == false)
-			{ //スクリーンエフェクトを使用していない場合
+			break;
+
+		case HIT_ENEMY: //敵の場合
+
+			//ダッシュしているか
+
+			if (g_player.bDash == true)
+			{
+				//ダッシュスクリーン
 
 				//回避音
 
@@ -833,12 +834,9 @@ void HitPlayer(HIT hit, int amount)
 				//スクリーンエフェクト
 
 				SetScreenEffect(D3DXCOLOR(0.0f, 1.0f, 1.0f, 0.5f));
-			}
-		}
-		else
-		{
 
-			if (g_player.nCounterState == 0)
+			}
+			else
 			{
 				//ダメージ音
 
@@ -846,15 +844,14 @@ void HitPlayer(HIT hit, int amount)
 
 				//ダメージスクリーン
 
-				if (UseScreenEffect() == false)
-				{ //スクリーンエフェクトを使用していない場合
+				SetScreenEffect(D3DXCOLOR(1.0f, 0.0f, 0.0f, 0.5f));
 
-					SetScreenEffect(D3DXCOLOR(1.0f, 0.0f, 0.0f, 0.5f));
-				}
 
 				//プレイヤーのライフを減らす
 
 				g_player.nLife--;
+
+				ChangeLifeCount(g_player.nLife); //ライフカウント
 
 				//HPバーを減らす
 
@@ -881,10 +878,11 @@ void HitPlayer(HIT hit, int amount)
 					g_player.state = PLAYERSTATE_DAMAGE;
 
 				}
+
+
+				break;
+
 			}
-
-			break;
-
 		}
 	}
 }

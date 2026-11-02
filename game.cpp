@@ -25,6 +25,7 @@
 #include "item.h"
 #include "itembox.h"
 #include "laser.h"
+#include "life.h"
 #include "scaffold.h"
 #include "screeneffect.h"
 #include "selectstage.h"
@@ -200,6 +201,11 @@ void InitGame(void)
 
 		InitTimer();
 	}
+
+	//プレイヤーの体力
+
+	InitLife();
+
 }
 
 //=============================
@@ -412,6 +418,10 @@ void UninitGame(void)
 		UninitTimer();
 	}
 
+	//プレイヤーの体力
+
+	UninitLife();
+
 	//背景
 
 	UninitBg();
@@ -502,6 +512,10 @@ void UpdateGame(void)
 		UpdateChargeEffect();
 	}
 
+	//プレイヤーの体力
+
+	UpdateLife();
+
 	//背景
 
 	UpdateBg();
@@ -554,23 +568,23 @@ void DrawGame(void)
 
 	DrawLaser();
 
-	//球
+	//敵
 
-	DrawBullet();
+	DrawEnemy();
 
 	//爆発
 
 	DrawExplosion();
-
-	//敵
-
-	DrawEnemy();
 
 	//プレイヤー
 
 	DrawPlayerEffect(); //プレイヤーのエフェクト
 
 	DrawPlayer(); //プレイヤー
+
+	//球
+
+	DrawBullet();
 
 	//エフェクト
 
@@ -605,6 +619,11 @@ void DrawGame(void)
 
 		DrawTimer();
 	}
+
+	//プレイヤーの体力
+
+	DrawLife();
+
 	//照準
 
 	DrawAim();
@@ -621,7 +640,7 @@ void DrawHowToUse(void)
 
 	//文字列に代入
 
-	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n""移動：WASD / Lスティックor十字キー\n""照準操作：マウス移動 / Rスティック\n""銃：左クリック / RTボタン\n""タイムストップ：SHIFTキー / LTボタン\n""ダッシュ：右クリック / Aボタン\n""ジャンプ：SPACEキー / Bボタン\n" "ロックオン：Fキー / Xボタン");
+	wsprintf(&aStr[0], "操作方法：キーボード / パッド\n""移動：AD / Lスティックor十字キー\n""照準操作：マウス移動 / Rスティック\n""銃：左クリック / RTボタン\n""タイムストップ：SHIFTキー / LTボタン\n""ダッシュ：右クリック / Aボタン\n""ジャンプ：SPACEキー / Bボタン\n" "ロックオン：Fキー / Xボタン");
 
 	//テキストの描画
 

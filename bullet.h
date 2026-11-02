@@ -24,7 +24,7 @@ typedef enum
 {
 	BULLETTYPE_PLAYER = 0, //ƒvƒŒƒCƒ„[‚Ì’e
 
-	BULLETTYPE_FIRE,       //‰Î‚Ì‹Ê
+	BULLETTYPE_FIRE,       //‰Î‚Ì’e
 
 	BULLETTYPE_LIGHT,      //Œõ‚Ì’e
 

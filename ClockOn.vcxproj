@@ -165,7 +165,10 @@
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="gameresult.cpp" />
     <ClCompile Include="gloweffect.cpp" />
-    <ClCompile Include="lasersecurity.cpp" />
+    <ClCompile Include="life.cpp" />
+    <ClCompile Include="lifeheart.cpp" />
+    <ClCompile Include="life_count.cpp" />
+    <ClCompile Include="life_multiplymark.cpp" />
     <ClCompile Include="lockonaim.cpp" />
     <ClCompile Include="pressenter.cpp" />
     <ClCompile Include="screeneffect.cpp" />
@@ -217,7 +220,10 @@
     <ClInclude Include="explosion.h" />
     <ClInclude Include="gameresult.h" />
     <ClInclude Include="gloweffect.h" />
-    <ClInclude Include="lasersecurity.h" />
+    <ClInclude Include="life.h" />
+    <ClInclude Include="lifeheart.h" />
+    <ClInclude Include="life_count.h" />
+    <ClInclude Include="life_multiplymark.h" />
     <ClInclude Include="lockonaim.h" />
     <ClInclude Include="pressenter.h" />
     <ClInclude Include="screeneffect.h" />

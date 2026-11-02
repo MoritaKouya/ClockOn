@@ -9,6 +9,7 @@
 #include "bg.h"
 #include "input.h"
 #include "fade.h"
+#include "game.h"
 #include "gameresult.h"
 #include "pressenter.h"
 #include "selectstage.h"
@@ -87,10 +88,14 @@ void UpdateResult(void)
 	if (nResultCounter == OUTPUT_GAMERESULT)
 	{ //ゲームリザルトの表示
 
+		PlaySound(SOUND_LABEL_SE_RESULT);
+
 		SetGameResult();
 	}
-	else if (nResultCounter == OUTPUT_TIMER && *GetSelectStage() != STAGE_1_0)
+	else if (nResultCounter == OUTPUT_TIMER && *GetSelectStage() != STAGE_1_0 && *GetClear() ==true)
 	{ //タイマーの表示
+
+		PlaySound(SOUND_LABEL_SE_RESULT);
 
 		bool* bStartTimer = GetStartTimer();
 
@@ -115,7 +120,7 @@ void UpdateResult(void)
 
 			//モード設定
 
-			SetFade(MODE_TITLE);
+			SetFade(MODE_SELECTSTAGE);
 		}
 	
 	}

@@ -50,7 +50,7 @@ const char* g_aBulletTexture_Path[BULLETTYPE_MAX] =
 {
 	"Data/TEXTURE/BULLET/bullet000.png", //プレイヤーの弾
 
-	"Data/TEXTURE/BULLET/bullet001.png", //火の玉
+	"Data/TEXTURE/BULLET/bullet001.png", //火の弾
 
 	"Data/TEXTURE/BULLET/bullet002.png", //光の弾
 
@@ -266,21 +266,23 @@ void UpdateBullet(void)
 
 				}
 
-				//ブロックの当たり判定(共通)
-				
-				CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
-
-					//エフェクト
+			    //球の種類に応じて変更する点
 
 				switch (g_aBullet[nCntBullet].type)
 				{
 				case BULLETTYPE_PLAYER: //プレイヤーの弾の場合
 
-					//なし
+					//ブロックの当たり判定
+
+					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
 
 					break;
 
-				case BULLETTYPE_FIRE: //火の玉の場合
+				case BULLETTYPE_FIRE: //火の弾の場合
+
+					//ブロックの当たり判定
+
+					CollisionBlock(&g_aBullet[nCntBullet]); //ブロック
 
 					//赤いエフェクト
 
@@ -301,7 +303,7 @@ void UpdateBullet(void)
 
 					//青い色のエフェクト
 
-					SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(0.75f, 0.92f, 1.0f, 1.0f), g_aBullet[nCntBullet].fSize, 60.0f, false);
+					SetEffect(g_aBullet[nCntBullet].pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXCOLOR(0.75f, 0.92f, 1.0f, 1.0f), g_aBullet[nCntBullet].fSize, 30.0f, false);
 
 					break;
 				}

@@ -54,7 +54,7 @@ void InitClockHands(void)
 
 	//ŽžŒv‚Ìj‚Ìj‚Ìî•ñ‚Ì‰Šú‰»
 
-	g_posClockHands = D3DXVECTOR3(SCREEN_WIDTH / 6 * 5, SCREEN_HEIGHT / 4 * 3, 0.0f);
+	g_posClockHands = D3DXVECTOR3(SCREEN_WIDTH / 6 * 5, SCREEN_HEIGHT / 6 * 5, 0.0f);
 
 	g_AngleClockHands = 0;
 

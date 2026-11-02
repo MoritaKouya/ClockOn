@@ -829,79 +829,80 @@ void HitEnemy(int nCntEnemy, int nDamage)
 
 	AddCombo();
 
-	if (g_aEnemy[nCntEnemy].nChargeBreakCounter <= 0)
-	{ //チャージブレイクカウンターがゼロの場合
 
-		//ライフを減らす
+	//ライフを減らす
 
-		g_aEnemy[nCntEnemy].EnemyInfo.nLife -= nDamage;
+	g_aEnemy[nCntEnemy].EnemyInfo.nLife -= nDamage;
 
-		if (g_aEnemy[nCntEnemy].EnemyInfo.nLife <= 0) //敵の体力がなくなった
-		{
-			//爆発
+	if (g_aEnemy[nCntEnemy].EnemyInfo.nLife <= 0) //敵の体力がなくなった
+	{
+		//爆発
 
-			SetExplosion(D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x, g_aEnemy[nCntEnemy].pos.y - ENEMY_SIZE, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+		SetExplosion(D3DXVECTOR3(g_aEnemy[nCntEnemy].pos.x, g_aEnemy[nCntEnemy].pos.y - ENEMY_SIZE, 0.0f), D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
 
-			g_aEnemy[nCntEnemy].bUse = false; //敵を使用していない状態にする
+		g_aEnemy[nCntEnemy].bUse = false; //敵を使用していない状態にする
 
-			g_nNumEnemy--; //敵の総数を減らす
-		}
-		else
-		{
-			//ダメージ
-
-			g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE; //ダメージを与える
-
-			g_aEnemy[nCntEnemy].nCounterState = 5; //状態カウンターを設定
-
-			VERTEX_2D* pVtx; //forの前でロック、後でアンロック
-
-		//頂点バッファをロックし、頂点データへのポインタを取得
-
-			g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
-
-			//頂点カラーの設定
-
-			pVtx += nCntEnemy * 4; //頂点データへのポインタを敵に合わせる
-
-			pVtx[0].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-			pVtx[1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-			pVtx[2].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-			pVtx[3].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-
-			g_pVtxBuffEnemy->Unlock();
-		}
+		g_nNumEnemy--; //敵の総数を減らす
 	}
 	else
-	{ //チャージブレイクカウンターが１以上の時
+	{
+		//ダメージ
 
-		g_aEnemy[nCntEnemy].nChargeBreakCounter--;
+		g_aEnemy[nCntEnemy].state = ENEMYSTATE_DAMAGE; //ダメージを与える
 
-		if (g_aEnemy[nCntEnemy].nChargeBreakCounter <= 0)
-		{ //チャージブレイクのカウンターがゼロになった場合
+		g_aEnemy[nCntEnemy].nCounterState = 5; //状態カウンターを設定
 
-			g_aEnemy[nCntEnemy].bChargeBreak = true; //チャージブレイク状態にする
+		VERTEX_2D* pVtx; //forの前でロック、後でアンロック
 
-			g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンターをリセット
+	//頂点バッファをロックし、頂点データへのポインタを取得
 
-			//時計のアイテムが飛び出す
+		g_pVtxBuffEnemy->Lock(0, 0, (void**)&pVtx, 0);
 
-			SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(20.0f, -30.0f, 0.0f), ITEMTYPE_00);
+		//頂点カラーの設定
 
-			SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(-20.0f, -30.0f, 0.0f), ITEMTYPE_00);
+		pVtx += nCntEnemy * 4; //頂点データへのポインタを敵に合わせる
 
-			//ブレイクの文字を表示する
+		pVtx[0].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-			//位置の調整
+		pVtx[1].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-			D3DXVECTOR3 pos = g_aEnemy[nCntEnemy].pos;
+		pVtx[2].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-			pos.x -= ENEMY_SIZE;
+		pVtx[3].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
-			SetBreakText(pos, ENEMY_SIZE, ENEMY_SIZE);
+		g_pVtxBuffEnemy->Unlock();
+
+		if (0 < g_aEnemy[nCntEnemy].nChargeBreakCounter)
+		{ //チャージブレイクカウンターが１以上の時
+
+			g_aEnemy[nCntEnemy].nChargeBreakCounter--;
+
+			if (0 == g_aEnemy[nCntEnemy].nChargeBreakCounter)
+			{ //チャージブレイクのカウンターがゼロになった場合
+
+				PlaySound(SOUND_LABEL_SE_BREAK); //ブレイク音
+
+				g_aEnemy[nCntEnemy].bChargeBreak = true; //チャージブレイク状態にする
+
+				g_aEnemy[nCntEnemy].nChargeCounter = 0; //チャージカウンターをリセット
+
+				//時計のアイテムが飛び出す
+
+				SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(20.0f, -30.0f, 0.0f), ITEMTYPE_00);
+
+				SetItem(g_aEnemy[nCntEnemy].pos, D3DXVECTOR3(-20.0f, -30.0f, 0.0f), ITEMTYPE_00);
+
+				//ブレイクの文字を表示する
+
+				//位置の調整
+
+				D3DXVECTOR3 pos = g_aEnemy[nCntEnemy].pos;
+
+				pos.x -= ENEMY_SIZE;
+
+				SetBreakText(pos, ENEMY_SIZE, ENEMY_SIZE);
+			}
+
 		}
 	}
 }

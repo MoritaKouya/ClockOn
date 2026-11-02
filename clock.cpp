@@ -51,7 +51,7 @@ void InitClock(void)
 
 	//時計の情報の初期化
 
-	g_posClock = D3DXVECTOR3(SCREEN_WIDTH / 6 * 5, SCREEN_HEIGHT / 4 * 3, 0.0f);
+	g_posClock = D3DXVECTOR3(SCREEN_WIDTH / 6 * 5, SCREEN_HEIGHT / 6 * 5, 0.0f);
 
 	VERTEX_2D* pVtx; //頂点情報へのポインタ
 
